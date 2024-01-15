@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Permission;
+namespace Oricodes\TenantPermission;
 
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -11,11 +11,17 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
-use Spatie\Permission\Contracts\Permission as PermissionContract;
-use Spatie\Permission\Contracts\Role as RoleContract;
+use Laravel\Octane\Events\OperationTerminated;
+use Oricodes\TenantPermission\Contracts\Permission as PermissionContract;
+use Oricodes\TenantPermission\Contracts\Role as RoleContract;
 
 class PermissionServiceProvider extends ServiceProvider
 {
+    public static function bladeMethodWrapper($method, $role, $tenant = null): bool
+    {
+        return auth($tenant)->check() && auth($tenant)->user()->{$method}($role);
+    }
+
     public function boot()
     {
         $this->offerPublishing();
@@ -40,16 +46,6 @@ class PermissionServiceProvider extends ServiceProvider
         $this->app->singleton(PermissionRegistrar::class);
     }
 
-    public function register()
-    {
-        $this->mergeConfigFrom(
-            __DIR__.'/../config/permission.php',
-            'permission'
-        );
-
-        $this->callAfterResolving('blade.compiler', fn (BladeCompiler $bladeCompiler) => $this->registerBladeExtensions($bladeCompiler));
-    }
-
     protected function offerPublishing(): void
     {
         if (! $this->app->runningInConsole()) {
@@ -62,12 +58,44 @@ class PermissionServiceProvider extends ServiceProvider
         }
 
         $this->publishes([
-            __DIR__.'/../config/permission.php' => config_path('permission.php'),
+	        __DIR__ . '/../config/tenant-permission.php' => config_path('tenant-permission.php'),
         ], 'permission-config');
 
         $this->publishes([
             __DIR__.'/../database/migrations/create_permission_tables.php.stub' => $this->getMigrationFileName('create_permission_tables.php'),
         ], 'permission-migrations');
+    }
+
+    /**
+     * Returns existing migration file if found, else uses the current timestamp.
+     */
+    protected function getMigrationFileName(string $migrationFileName): string
+    {
+        $timestamp = date('Y_m_d_His');
+
+        $filesystem = $this->app->make(Filesystem::class);
+
+        return Collection::make([$this->app->databasePath().DIRECTORY_SEPARATOR.'migrations'.DIRECTORY_SEPARATOR])
+            ->flatMap(fn ($path) => $filesystem->glob($path.'*_'.$migrationFileName))
+            ->push($this->app->databasePath()."/migrations/{$timestamp}_{$migrationFileName}")
+            ->first();
+    }
+
+    protected function registerMacroHelpers(): void
+    {
+        if (! method_exists(Route::class, 'macro')) { // Lumen
+            return;
+        }
+
+        Route::macro('role', function ($roles = []) {
+            /** @var Route $this */
+            return $this->middleware('role:'.implode('|', Arr::wrap($roles)));
+        });
+
+        Route::macro('permission', function ($permissions = []) {
+            /** @var Route $this */
+            return $this->middleware('permission:'.implode('|', Arr::wrap($permissions)));
+        });
     }
 
     protected function registerCommands(): void
@@ -88,6 +116,12 @@ class PermissionServiceProvider extends ServiceProvider
         ]);
     }
 
+    protected function registerModelBindings(): void
+    {
+        $this->app->bind(PermissionContract::class, fn ($app) => $app->make($app->config['permission.models.permission']));
+        $this->app->bind(RoleContract::class, fn ($app) => $app->make($app->config['permission.models.role']));
+    }
+
     protected function registerOctaneListener(): void
     {
         if ($this->app->runningInConsole() || ! $this->app['config']->get('octane.listeners')) {
@@ -96,7 +130,7 @@ class PermissionServiceProvider extends ServiceProvider
 
         $dispatcher = $this->app[Dispatcher::class];
         // @phpstan-ignore-next-line
-        $dispatcher->listen(function (\Laravel\Octane\Events\OperationTerminated $event) {
+        $dispatcher->listen(function (OperationTerminated $event) {
             // @phpstan-ignore-next-line
             $event->sandbox->make(PermissionRegistrar::class)->setPermissionsTeamId(null);
         });
@@ -105,26 +139,25 @@ class PermissionServiceProvider extends ServiceProvider
             return;
         }
         // @phpstan-ignore-next-line
-        $dispatcher->listen(function (\Laravel\Octane\Events\OperationTerminated $event) {
+        $dispatcher->listen(function (OperationTerminated $event) {
             // @phpstan-ignore-next-line
             $event->sandbox->make(PermissionRegistrar::class)->clearPermissionsCollection();
         });
     }
 
-    protected function registerModelBindings(): void
-    {
-        $this->app->bind(PermissionContract::class, fn ($app) => $app->make($app->config['permission.models.permission']));
-        $this->app->bind(RoleContract::class, fn ($app) => $app->make($app->config['permission.models.role']));
-    }
+    public function register()
+    : void {
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/tenant-permission.php',
+            'permission'
+        );
 
-    public static function bladeMethodWrapper($method, $role, $guard = null): bool
-    {
-        return auth($guard)->check() && auth($guard)->user()->{$method}($role);
+        $this->callAfterResolving('blade.compiler', fn (BladeCompiler $bladeCompiler) => $this->registerBladeExtensions($bladeCompiler));
     }
 
     protected function registerBladeExtensions($bladeCompiler): void
     {
-        $bladeMethodWrapper = '\\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper';
+        $bladeMethodWrapper = '\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper';
 
         $bladeCompiler->directive('role', fn ($args) => "<?php if({$bladeMethodWrapper}('hasRole', {$args})): ?>");
         $bladeCompiler->directive('elserole', fn ($args) => "<?php elseif({$bladeMethodWrapper}('hasRole', {$args})): ?>");
@@ -148,37 +181,5 @@ class PermissionServiceProvider extends ServiceProvider
 
         $bladeCompiler->directive('hasexactroles', fn ($args) => "<?php if({$bladeMethodWrapper}('hasExactRoles', {$args})): ?>");
         $bladeCompiler->directive('endhasexactroles', fn () => '<?php endif; ?>');
-    }
-
-    protected function registerMacroHelpers(): void
-    {
-        if (! method_exists(Route::class, 'macro')) { // Lumen
-            return;
-        }
-
-        Route::macro('role', function ($roles = []) {
-            /** @var Route $this */
-            return $this->middleware('role:'.implode('|', Arr::wrap($roles)));
-        });
-
-        Route::macro('permission', function ($permissions = []) {
-            /** @var Route $this */
-            return $this->middleware('permission:'.implode('|', Arr::wrap($permissions)));
-        });
-    }
-
-    /**
-     * Returns existing migration file if found, else uses the current timestamp.
-     */
-    protected function getMigrationFileName(string $migrationFileName): string
-    {
-        $timestamp = date('Y_m_d_His');
-
-        $filesystem = $this->app->make(Filesystem::class);
-
-        return Collection::make([$this->app->databasePath().DIRECTORY_SEPARATOR.'migrations'.DIRECTORY_SEPARATOR])
-            ->flatMap(fn ($path) => $filesystem->glob($path.'*_'.$migrationFileName))
-            ->push($this->app->databasePath()."/migrations/{$timestamp}_{$migrationFileName}")
-            ->first();
     }
 }

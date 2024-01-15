@@ -1,24 +1,25 @@
 <?php
 
-if (! function_exists('getModelForGuard')) {
+use Illuminate\Database\Eloquent\Model;
+use Oricodes\TenantPermission\PermissionRegistrar;
+
+if (! function_exists('getModelForTenant')) {
     /**
      * @return string|null
      */
-    function getModelForGuard(string $guard)
-    {
-        return collect(config('auth.guards'))
-            ->map(fn ($guard) => isset($guard['provider']) ? config("auth.providers.{$guard['provider']}.model") : null)
-            ->get($guard);
+    function getModelForTenant()
+    : ?string {
+        return App\Models\TenantUser::class;
     }
 }
 
 if (! function_exists('setPermissionsTeamId')) {
     /**
-     * @param  int|string|\Illuminate\Database\Eloquent\Model  $id
+     * @param Model|int|string $id
      */
-    function setPermissionsTeamId($id)
-    {
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($id);
+    function setPermissionsTeamId(Model | int | string $id)
+    : void {
+        app(PermissionRegistrar::class)->setPermissionsTeamId($id);
     }
 }
 
@@ -27,7 +28,7 @@ if (! function_exists('getPermissionsTeamId')) {
      * @return int|string
      */
     function getPermissionsTeamId()
-    {
-        return app(\Spatie\Permission\PermissionRegistrar::class)->getPermissionsTeamId();
+    : int | string {
+        return app(PermissionRegistrar::class)->getPermissionsTeamId();
     }
 }

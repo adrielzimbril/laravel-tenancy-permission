@@ -1,6 +1,6 @@
 {
     "name": "spatie/laravel-permission",
-    "description": "Permission handling for Laravel 8.0 and up",
+    "description": "Stancl Tenancy Permission handling for Laravel 8.2 and up",
     "license": "MIT",
     "keywords": [
         "spatie",
@@ -22,7 +22,7 @@
     ],
     "homepage": "https://github.com/spatie/laravel-permission",
     "require": {
-        "php": "^8.0",
+        "php": "^8.2",
         "illuminate/auth": "^8.12|^9.0|^10.0|^11.0",
         "illuminate/container": "^8.12|^9.0|^10.0|^11.0",
         "illuminate/contracts": "^8.12|^9.0|^10.0|^11.0",
@@ -37,7 +37,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "Spatie\\Permission\\": "src"
+            "Oricodes\\TenantPermission\\": "src"
         },
         "files": [
             "src/helpers.php"
@@ -45,7 +45,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Spatie\\Permission\\Tests\\": "tests"
+            "Oricodes\\TenantPermission\\Tests\\": "tests"
         }
     },
     "config": {
@@ -58,7 +58,7 @@
         },
         "laravel": {
             "providers": [
-                "Spatie\\Permission\\PermissionServiceProvider"
+                "Oricodes\\TenantPermission\\PermissionServiceProvider"
             ]
         }
     },

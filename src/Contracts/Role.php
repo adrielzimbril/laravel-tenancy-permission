@@ -1,48 +1,49 @@
 <?php
 
-namespace Spatie\Permission\Contracts;
+namespace Oricodes\TenantPermission\Contracts;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Oricodes\TenantPermission\Exceptions\RoleDoesNotExist;
 
 /**
  * @property int|string $id
  * @property string $name
- * @property string|null $guard_name
+ * @property string|null $tenant_name
  *
- * @mixin \Spatie\Permission\Models\Role
+ * @mixin \Oricodes\TenantPermission\Models\Role
  */
 interface Role
 {
+    /**
+     * Find a role by its name and guard name.
+     *
+     *
+     * @throws RoleDoesNotExist
+     */
+    public static function findByName(string $name, ?string $tenantName): self;
+
+    /**
+     * Find a role by its id and guard name.
+     *
+     *
+     * @throws RoleDoesNotExist
+     */
+    public static function findById(int|string $id, ?string $tenantName): self;
+
+    /**
+     * Find or create a role by its name and guard name.
+     */
+    public static function findOrCreate(string $name, ?string $tenantName): self;
+
     /**
      * A role may be given various permissions.
      */
     public function permissions(): BelongsToMany;
 
     /**
-     * Find a role by its name and guard name.
-     *
-     *
-     * @throws \Spatie\Permission\Exceptions\RoleDoesNotExist
-     */
-    public static function findByName(string $name, ?string $guardName): self;
-
-    /**
-     * Find a role by its id and guard name.
-     *
-     *
-     * @throws \Spatie\Permission\Exceptions\RoleDoesNotExist
-     */
-    public static function findById(int|string $id, ?string $guardName): self;
-
-    /**
-     * Find or create a role by its name and guard name.
-     */
-    public static function findOrCreate(string $name, ?string $guardName): self;
-
-    /**
      * Determine if the user may perform the given permission.
      *
-     * @param  string|\Spatie\Permission\Contracts\Permission  $permission
+     * @param  string|Permission $permission
      */
-    public function hasPermissionTo($permission, ?string $guardName): bool;
+    public function hasPermissionTo($permission, ?string $tenantName): bool;
 }

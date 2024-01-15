@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Permission\Exceptions;
+namespace Oricodes\TenantPermission\Exceptions;
 
 use InvalidArgumentException;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Permission\Exceptions;
+namespace Oricodes\TenantPermission\Exceptions;
 
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -57,7 +57,7 @@ class UnauthorizedException extends HttpException
     {
         $class = get_class($user);
 
-        return new static(403, "Authorizable class `{$class}` must use Spatie\Permission\Traits\HasRoles trait.", null, []);
+        return new static(403, "Authorizable class `{$class}` must use Oricodes\TenantPermission\Traits\HasRoles trait.", null, []);
     }
 
     public static function notLoggedIn(): self

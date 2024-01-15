@@ -1,11 +1,11 @@
 <?php
 
-namespace Spatie\Permission;
+namespace Oricodes\TenantPermission;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Spatie\Permission\Contracts\Wildcard;
-use Spatie\Permission\Exceptions\WildcardPermissionNotProperlyFormatted;
+use Oricodes\TenantPermission\Contracts\Wildcard;
+use Oricodes\TenantPermission\Exceptions\WildcardPermissionNotProperlyFormatted;
 
 class WildcardPermission implements Wildcard
 {
@@ -79,15 +79,15 @@ class WildcardPermission implements Wildcard
         return $index;
     }
 
-    public function implies(string $permission, string $guardName, array $index): bool
+    public function implies(string $permission, string $tenantName, array $index): bool
     {
-        if (! array_key_exists($guardName, $index)) {
+        if (! array_key_exists($tenantName, $index)) {
             return false;
         }
 
         $permission = explode(static::PART_DELIMITER, $permission);
 
-        return $this->checkIndex($permission, $index[$guardName]);
+        return $this->checkIndex($permission, $index[$tenantName]);
     }
 
     protected function checkIndex(array $permission, array $index): bool

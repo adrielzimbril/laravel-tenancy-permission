@@ -1,9 +1,9 @@
 <?php
 
-namespace Spatie\Permission\Commands;
+namespace Oricodes\TenantPermission\Commands;
 
 use Illuminate\Console\Command;
-use Spatie\Permission\Contracts\Permission as PermissionContract;
+use Oricodes\TenantPermission\Contracts\Permission as PermissionContract;
 
 class CreatePermission extends Command
 {

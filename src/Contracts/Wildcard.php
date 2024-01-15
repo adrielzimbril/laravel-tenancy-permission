@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Permission\Contracts;
+namespace Oricodes\TenantPermission\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,5 +10,5 @@ interface Wildcard
 
     public function getIndex(): array;
 
-    public function implies(string $permission, string $guardName, array $index): bool;
+    public function implies(string $permission, string $tenantName, array $index): bool;
 }

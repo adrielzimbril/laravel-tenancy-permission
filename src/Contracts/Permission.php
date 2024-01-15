@@ -1,41 +1,42 @@
 <?php
 
-namespace Spatie\Permission\Contracts;
+namespace Oricodes\TenantPermission\Contracts;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Oricodes\TenantPermission\Exceptions\PermissionDoesNotExist;
 
 /**
  * @property int|string $id
  * @property string $name
- * @property string|null $guard_name
+ * @property string|null $tenant_name
  *
- * @mixin \Spatie\Permission\Models\Permission
+ * @mixin \Oricodes\TenantPermission\Models\Permission
  */
 interface Permission
 {
     /**
-     * A permission can be applied to roles.
-     */
-    public function roles(): BelongsToMany;
-
-    /**
      * Find a permission by its name.
      *
      *
-     * @throws \Spatie\Permission\Exceptions\PermissionDoesNotExist
+     * @throws PermissionDoesNotExist
      */
-    public static function findByName(string $name, ?string $guardName): self;
+    public static function findByName(string $name, ?string $tenantName): self;
 
     /**
      * Find a permission by its id.
      *
      *
-     * @throws \Spatie\Permission\Exceptions\PermissionDoesNotExist
+     * @throws PermissionDoesNotExist
      */
-    public static function findById(int|string $id, ?string $guardName): self;
+    public static function findById(int|string $id, ?string $tenantName): self;
 
     /**
      * Find or Create a permission by its name and guard name.
      */
-    public static function findOrCreate(string $name, ?string $guardName): self;
+    public static function findOrCreate(string $name, ?string $tenantName): self;
+
+    /**
+     * A permission can be applied to roles.
+     */
+    public function roles(): BelongsToMany;
 }

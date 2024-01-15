@@ -1,9 +1,9 @@
 <?php
 
-namespace Spatie\Permission\Commands;
+namespace Oricodes\TenantPermission\Commands;
 
 use Illuminate\Console\Command;
-use Spatie\Permission\PermissionRegistrar;
+use Oricodes\TenantPermission\PermissionRegistrar;
 
 class CacheReset extends Command
 {

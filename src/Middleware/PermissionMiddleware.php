@@ -1,23 +1,38 @@
 <?php
 
-namespace Spatie\Permission\Middleware;
+namespace Oricodes\TenantPermission\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Exceptions\UnauthorizedException;
-use Spatie\Permission\Guard;
+use Oricodes\TenantPermission\Exceptions\UnauthorizedException;
+use Oricodes\TenantPermission\Guard;
 
 class PermissionMiddleware
 {
-    public function handle($request, Closure $next, $permission, $guard = null)
+    /**
+     * Specify the permission and guard for the middleware.
+     *
+     * @param  array|string  $permission
+     * @param  string|null  $tenant
+     * @return string
+     */
+    public static function using($permission, $tenant = null)
     {
-        $authGuard = Auth::guard($guard);
+        $permissionString = is_string($permission) ? $permission : implode('|', $permission);
+        $args = is_null($tenant) ? $permissionString : "$permissionString,$tenant";
+
+        return static::class.':'.$args;
+    }
+
+    public function handle($request, Closure $next, $permission, $tenant = null)
+    {
+        $authGuard = Auth::guard($tenant);
 
         $user = $authGuard->user();
 
         // For machine-to-machine Passport clients
         if (! $user && $request->bearerToken() && config('permission.use_passport_client_credentials')) {
-            $user = Guard::getPassportClient($guard);
+            $user = Guard::getPassportClient($tenant);
         }
 
         if (! $user) {
@@ -37,20 +52,5 @@ class PermissionMiddleware
         }
 
         return $next($request);
-    }
-
-    /**
-     * Specify the permission and guard for the middleware.
-     *
-     * @param  array|string  $permission
-     * @param  string|null  $guard
-     * @return string
-     */
-    public static function using($permission, $guard = null)
-    {
-        $permissionString = is_string($permission) ? $permission : implode('|', $permission);
-        $args = is_null($guard) ? $permissionString : "$permissionString,$guard";
-
-        return static::class.':'.$args;
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
-namespace Spatie\Permission\Commands;
+namespace Oricodes\TenantPermission\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Spatie\Permission\Contracts\Permission as PermissionContract;
-use Spatie\Permission\Contracts\Role as RoleContract;
+use Oricodes\TenantPermission\Contracts\Permission as PermissionContract;
+use Oricodes\TenantPermission\Contracts\Role as RoleContract;
 use Symfony\Component\Console\Helper\TableCell;
 
 class Show extends Command
@@ -24,18 +24,18 @@ class Show extends Command
         $team_key = config('permission.column_names.team_foreign_key');
 
         $style = $this->argument('style') ?? 'default';
-        $guard = $this->argument('guard');
+        $tenant = $this->argument('guard');
 
-        if ($guard) {
-            $guards = Collection::make([$guard]);
+        if ($tenant) {
+            $tenants = Collection::make([$tenant]);
         } else {
-            $guards = $permissionClass::pluck('guard_name')->merge($roleClass::pluck('guard_name'))->unique();
+            $tenants = $permissionClass::pluck('tenant_name')->merge($roleClass::pluck('tenant_name'))->unique();
         }
 
-        foreach ($guards as $guard) {
-            $this->info("Guard: $guard");
+        foreach ($tenants as $tenant) {
+            $this->info("Guard: $tenant");
 
-            $roles = $roleClass::whereGuardName($guard)
+            $roles = $roleClass::whereGuardName($tenant)
                 ->with('permissions')
                 ->when($teamsEnabled, fn ($q) => $q->orderBy($team_key))
                 ->orderBy('name')->get()->mapWithKeys(fn ($role) => [
@@ -45,7 +45,7 @@ class Show extends Command
                     ],
                 ]);
 
-            $permissions = $permissionClass::whereGuardName($guard)->orderBy('name')->pluck('name', 'id');
+            $permissions = $permissionClass::whereGuardName($tenant)->orderBy('name')->pluck('name', 'id');
 
             $body = $permissions->map(fn ($permission, $id) => $roles->map(
                 fn (array $role_data) => $role_data['permissions']->contains($id) ? ' ✔' : ' ·'

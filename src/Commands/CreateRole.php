@@ -1,11 +1,11 @@
 <?php
 
-namespace Spatie\Permission\Commands;
+namespace Oricodes\TenantPermission\Commands;
 
 use Illuminate\Console\Command;
-use Spatie\Permission\Contracts\Permission as PermissionContract;
-use Spatie\Permission\Contracts\Role as RoleContract;
-use Spatie\Permission\PermissionRegistrar;
+use Oricodes\TenantPermission\Contracts\Permission as PermissionContract;
+use Oricodes\TenantPermission\Contracts\Role as RoleContract;
+use Oricodes\TenantPermission\PermissionRegistrar;
 
 class CreateRole extends Command
 {
@@ -18,7 +18,7 @@ class CreateRole extends Command
     protected $description = 'Create a role';
 
     public function handle(PermissionRegistrar $permissionRegistrar)
-    {
+    : void {
         $roleClass = app(RoleContract::class);
 
         $teamIdAux = getPermissionsTeamId();
@@ -44,9 +44,9 @@ class CreateRole extends Command
     }
 
     /**
-     * @param  array|null|string  $string
+     * @param array|string|null $string
      */
-    protected function makePermissions($string = null)
+    protected function makePermissions(array | string $string = null)
     {
         if (empty($string)) {
             return;

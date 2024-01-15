@@ -1,9 +1,10 @@
 <?php
 
-namespace Spatie\Permission\Commands;
+namespace Oricodes\TenantPermission\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
+use Throwable;
 
 class UpgradeForTeams extends Command
 {
@@ -16,7 +17,7 @@ class UpgradeForTeams extends Command
     public function handle()
     {
         if (! Config::get('permission.teams')) {
-            $this->error('Teams feature is disabled in your permission.php file.');
+            $this->error('Teams feature is disabled in your tenant-permission.php file.');
             $this->warn('Please enable the teams setting in your configuration.');
 
             return;
@@ -56,42 +57,6 @@ class UpgradeForTeams extends Command
     }
 
     /**
-     * Create the migration.
-     *
-     * @return bool
-     */
-    protected function createMigration()
-    {
-        try {
-            $migrationStub = __DIR__."/../../database/migrations/{$this->migrationSuffix}.stub";
-            copy($migrationStub, $this->getMigrationPath());
-
-            return true;
-        } catch (\Throwable $e) {
-            $this->error($e->getMessage());
-
-            return false;
-        }
-    }
-
-    /**
-     * Build a warning regarding possible duplication
-     * due to already existing migrations.
-     *
-     * @return string
-     */
-    protected function getExistingMigrationsWarning(array $existingMigrations)
-    {
-        if (count($existingMigrations) > 1) {
-            $base = "Setup teams migrations already exist.\nFollowing files were found: ";
-        } else {
-            $base = "Setup teams migration already exists.\nFollowing file was found: ";
-        }
-
-        return $base.array_reduce($existingMigrations, fn ($carry, $fileName) => $carry."\n - ".$fileName);
-    }
-
-    /**
      * Check if there is another migration
      * with the same suffix.
      *
@@ -118,5 +83,41 @@ class UpgradeForTeams extends Command
         $date = $date ?: date('Y_m_d_His');
 
         return database_path("migrations/{$date}_{$this->migrationSuffix}");
+    }
+
+    /**
+     * Build a warning regarding possible duplication
+     * due to already existing migrations.
+     *
+     * @return string
+     */
+    protected function getExistingMigrationsWarning(array $existingMigrations)
+    {
+        if (count($existingMigrations) > 1) {
+            $base = "Setup teams migrations already exist.\nFollowing files were found: ";
+        } else {
+            $base = "Setup teams migration already exists.\nFollowing file was found: ";
+        }
+
+        return $base.array_reduce($existingMigrations, fn ($carry, $fileName) => $carry."\n - ".$fileName);
+    }
+
+    /**
+     * Create the migration.
+     *
+     * @return bool
+     */
+    protected function createMigration()
+    {
+        try {
+            $migrationStub = __DIR__."/../../database/migrations/{$this->migrationSuffix}.stub";
+            copy($migrationStub, $this->getMigrationPath());
+
+            return true;
+        } catch (Throwable $e) {
+            $this->error($e->getMessage());
+
+            return false;
+        }
     }
 }

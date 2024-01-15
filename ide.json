@@ -4,12 +4,12 @@
         "directives": [
             {
                 "name": "role",
-                "prefix": "<?php if(\\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
+                "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
                 "suffix": "})): ?>"
             },
             {
                 "name": "elserole",
-                "prefix": "<?php elseif(\\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
+                "prefix": "<?php elseif(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
                 "suffix": "})): ?>"
             },
             {
@@ -19,7 +19,7 @@
             },
             {
                 "name": "hasrole",
-                "prefix": "<?php if(\\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
+                "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
                 "suffix": "})): ?>"
             },
             {
@@ -29,7 +29,7 @@
             },
             {
                 "name": "hasanyrole",
-                "prefix": "<?php if(\\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper('hasAnyRole', {",
+                "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasAnyRole', {",
                 "suffix": "})): ?>"
             },
             {
@@ -39,7 +39,7 @@
             },
             {
                 "name": "hasallroles",
-                "prefix": "<?php if(\\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper('hasAllRoles', {",
+                "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasAllRoles', {",
                 "suffix": "})): ?>"
             },
             {
@@ -49,7 +49,7 @@
             },
             {
                 "name": "unlessrole",
-                "prefix": "<?php if(! \\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
+                "prefix": "<?php if(! \\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
                 "suffix": "})): ?>"
             },
             {
@@ -59,7 +59,7 @@
             },
             {
                 "name": "hasexactroles",
-                "prefix": "<?php if(\\Spatie\\Permission\\PermissionServiceProvider::bladeMethodWrapper('hasExactRoles', {",
+                "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasExactRoles', {",
                 "suffix": "})): ?>"
             },
             {

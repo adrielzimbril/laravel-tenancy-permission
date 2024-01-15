@@ -1,8 +1,8 @@
 <?php
 
-namespace Spatie\Permission\Traits;
+namespace Oricodes\TenantPermission\Traits;
 
-use Spatie\Permission\PermissionRegistrar;
+use Oricodes\TenantPermission\PermissionRegistrar;
 
 trait RefreshesPermissionCache
 {

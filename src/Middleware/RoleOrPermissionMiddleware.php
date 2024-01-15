@@ -1,23 +1,38 @@
 <?php
 
-namespace Spatie\Permission\Middleware;
+namespace Oricodes\TenantPermission\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Exceptions\UnauthorizedException;
-use Spatie\Permission\Guard;
+use Oricodes\TenantPermission\Exceptions\UnauthorizedException;
+use Oricodes\TenantPermission\Guard;
 
 class RoleOrPermissionMiddleware
 {
-    public function handle($request, Closure $next, $roleOrPermission, $guard = null)
+    /**
+     * Specify the role or permission and guard for the middleware.
+     *
+     * @param  array|string  $roleOrPermission
+     * @param  string|null  $tenant
+     * @return string
+     */
+    public static function using($roleOrPermission, $tenant = null)
     {
-        $authGuard = Auth::guard($guard);
+        $roleOrPermissionString = is_string($roleOrPermission) ? $roleOrPermission : implode('|', $roleOrPermission);
+        $args = is_null($tenant) ? $roleOrPermissionString : "$roleOrPermissionString,$tenant";
+
+        return static::class.':'.$args;
+    }
+
+    public function handle($request, Closure $next, $roleOrPermission, $tenant = null)
+    {
+        $authGuard = Auth::guard($tenant);
 
         $user = $authGuard->user();
 
         // For machine-to-machine Passport clients
         if (! $user && $request->bearerToken() && config('permission.use_passport_client_credentials')) {
-            $user = Guard::getPassportClient($guard);
+            $user = Guard::getPassportClient($tenant);
         }
 
         if (! $user) {
@@ -37,20 +52,5 @@ class RoleOrPermissionMiddleware
         }
 
         return $next($request);
-    }
-
-    /**
-     * Specify the role or permission and guard for the middleware.
-     *
-     * @param  array|string  $roleOrPermission
-     * @param  string|null  $guard
-     * @return string
-     */
-    public static function using($roleOrPermission, $guard = null)
-    {
-        $roleOrPermissionString = is_string($roleOrPermission) ? $roleOrPermission : implode('|', $roleOrPermission);
-        $args = is_null($guard) ? $roleOrPermissionString : "$roleOrPermissionString,$guard";
-
-        return static::class.':'.$args;
     }
 }

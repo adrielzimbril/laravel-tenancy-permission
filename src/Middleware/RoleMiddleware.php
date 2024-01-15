@@ -1,23 +1,38 @@
 <?php
 
-namespace Spatie\Permission\Middleware;
+namespace Oricodes\TenantPermission\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Permission\Exceptions\UnauthorizedException;
-use Spatie\Permission\Guard;
+use Oricodes\TenantPermission\Exceptions\UnauthorizedException;
+use Oricodes\TenantPermission\Guard;
 
 class RoleMiddleware
 {
-    public function handle($request, Closure $next, $role, $guard = null)
+    /**
+     * Specify the role and guard for the middleware.
+     *
+     * @param array|string $role
+     * @param string|null $tenant
+     * @return string
+     */
+    public static function using(array | string $role, string $tenant = null)
+    : string {
+        $roleString = is_string($role) ? $role : implode('|', $role);
+        $args = is_null($tenant) ? $roleString : "$roleString,$tenant";
+
+        return static::class.':'.$args;
+    }
+
+    public function handle($request, Closure $next, $role, $tenant = null)
     {
-        $authGuard = Auth::guard($guard);
+        $authGuard = Auth::guard($tenant);
 
         $user = $authGuard->user();
 
         // For machine-to-machine Passport clients
         if (! $user && $request->bearerToken() && config('permission.use_passport_client_credentials')) {
-            $user = Guard::getPassportClient($guard);
+            $user = Guard::getPassportClient($tenant);
         }
 
         if (! $user) {
@@ -37,20 +52,5 @@ class RoleMiddleware
         }
 
         return $next($request);
-    }
-
-    /**
-     * Specify the role and guard for the middleware.
-     *
-     * @param  array|string  $role
-     * @param  string|null  $guard
-     * @return string
-     */
-    public static function using($role, $guard = null)
-    {
-        $roleString = is_string($role) ? $role : implode('|', $role);
-        $args = is_null($guard) ? $roleString : "$roleString,$guard";
-
-        return static::class.':'.$args;
     }
 }
