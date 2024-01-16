@@ -1,5 +1,5 @@
 {
-    "name": "adrielzimbril/tenancy-laravel-permission",
+    "name": "adrielzimbril/laravel-tenancy-permission",
     "description": "Stancl Tenancy Permission handling for Laravel 8.2 and up",
     "license": "MIT",
     "keywords": [
