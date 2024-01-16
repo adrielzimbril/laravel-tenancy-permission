@@ -42,19 +42,17 @@ class Permission extends Model implements PermissionContract {
 	}
 
 	/**
-	 * Find a permission by its name (and optionally tenantName).
+	 * Find a permission by its name.
 	 *
 	 * @param string $name
-	 * @param string|null $tenantName
 	 * @return PermissionContract
 	 *
 	 */
-	public static function findByName(string $name, ?string $tenantName = null)
+	public static function findByName(string $name)
 	: PermissionContract {
-		$tenantName = $tenantName ?? Tenant::getDefaultName();
-		$permission = static::getPermission(['name' => $name, 'tenant_name' => $tenantName]);
+		$permission = static::getPermission(['name' => $name]);
 		if (!$permission) {
-			throw PermissionDoesNotExist::create($name, $tenantName);
+			throw PermissionDoesNotExist::create($name);
 		}
 
 		return $permission;
@@ -83,20 +81,19 @@ class Permission extends Model implements PermissionContract {
 	}
 
 	/**
+	 * @param array $attributes
 	 * @return Builder|Model
 	 *
-	 * @throws PermissionAlreadyExists
 	 */
 	public static function create(array $attributes = [])
 	: Model | Builder {
 		$attributes['tenant_name'] = $attributes['tenant_name'] ?? Tenant::getDefaultName();
 
-		$permission = static::getPermission(['name'        => $attributes['name'],
-		                                     'tenant_name' => $attributes['tenant_name']
+		$permission = static::getPermission(['name' => $attributes['name']
 		]);
 
 		if ($permission) {
-			throw PermissionAlreadyExists::create($attributes['name'], $attributes['tenant_name']);
+			throw PermissionAlreadyExists::create($attributes['name']);
 		}
 
 		return static::query()->create($attributes);
@@ -105,17 +102,16 @@ class Permission extends Model implements PermissionContract {
 	/**
 	 * Find a permission by its id (and optionally tenantName).
 	 *
-	 * @return PermissionContract|Permission
-	 *
-	 * @throws PermissionDoesNotExist
+	 * @param int|string $id
+	 * @return PermissionContract
 	 */
-	public static function findById(int | string $id, ?string $tenantName = null)
+	public static function findById(int | string $id)
 	: PermissionContract {
 		$tenantName = $tenantName ?? Tenant::getDefaultName();
-		$permission = static::getPermission([(new static)->getKeyName() => $id, 'tenant_name' => $tenantName]);
+		$permission = static::getPermission([(new static)->getKeyName() => $id]);
 
 		if (!$permission) {
-			throw PermissionDoesNotExist::withId($id, $tenantName);
+			throw PermissionDoesNotExist::withId($id);
 		}
 
 		return $permission;
@@ -124,15 +120,16 @@ class Permission extends Model implements PermissionContract {
 	/**
 	 * Find or create permission by its name (and optionally tenantName).
 	 *
+	 * @param string $name
 	 * @return PermissionContract
 	 */
-	public static function findOrCreate(string $name, ?string $tenantName = null)
+	public static function findOrCreate(string $name)
 	: PermissionContract {
 		$tenantName = $tenantName ?? Tenant::getDefaultName();
-		$permission = static::getPermission(['name' => $name, 'tenant_name' => $tenantName]);
+		$permission = static::getPermission(['name' => $name]);
 
 		if (!$permission) {
-			return static::query()->create(['name' => $name, 'tenant_name' => $tenantName]);
+			return static::query()->create(['name' => $name]);
 		}
 
 		return $permission;
