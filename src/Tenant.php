@@ -50,7 +50,7 @@ class Tenant {
 	    return self::getConfigAuthGuards($class);
 		*/
 
-		$tenantName = tenant()->tenants->pluck('id');
+		$tenantName = tenant()->tenants()->pluck('id');
 
 		return collect($tenantName);
 	}

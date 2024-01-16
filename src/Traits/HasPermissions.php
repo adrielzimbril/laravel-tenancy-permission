@@ -50,21 +50,16 @@ trait HasPermissions {
 	/**
 	 * A model may have multiple direct permissions.
 	 */
-	public function permissions()
-	: BelongsToMany {
+	public function permissions()  {
 		$relation = $this->morphToMany(
 			config('tenant-permission.models.permission'),
 			'model',
 			config('tenant-permission.table_names.model_has_permissions'),
 			config('tenant-permission.column_names.model_morph_key'),
 			app(PermissionRegistrar::class)->pivotPermission
-		);
+		)->withPivot('tenant_name');
 
-		if (!app(PermissionRegistrar::class)->teams) {
-			return $relation;
-		}
-
-		return $relation->wherePivot(app(PermissionRegistrar::class)->teamsKey, getPermissionsTeamId());
+		return $relation;
 	}
 
 	/**
@@ -363,7 +358,7 @@ trait HasPermissions {
 	 * @return $this
 	 * @throws ReflectionException
 	 */
-	public function syncPermissions(...$permissions)
+	public function syncPermissions($tenantName, ...$permissions)
 	: static {
 		if ($this->getModel()->exists) {
 			$this->collectPermissions($permissions);
@@ -371,7 +366,7 @@ trait HasPermissions {
 			$this->setRelation('permissions', collect());
 		}
 
-		return $this->givePermissionTo($permissions);
+		return $this->givePermissionTo($permissions, $tenantName);
 	}
 
 	/**
@@ -395,7 +390,6 @@ trait HasPermissions {
 				}
 
 				if (!in_array($permission->getKey(), $array)) {
-					$this->ensureModelSharesTenant($permission);
 					$array[] = $permission->getKey();
 				}
 
@@ -432,7 +426,6 @@ trait HasPermissions {
 			}, $permissions);
 
 			return $this->getPermissionClass()::whereIn('name', $permissions)
-				->whereIn('tenant_name', $this->getTenantNames())
 				->get();
 		}
 
@@ -467,34 +460,29 @@ trait HasPermissions {
 	 * @return $this
 	 * @throws ReflectionException
 	 */
-	public function givePermissionTo(...$permissions)
+	public function givePermissionTo($tenantName, ...$permissions)
 	: static {
 		$permissions = $this->collectPermissions($permissions);
 
-		$model = $this->getModel();
-		$teamPivot = app(PermissionRegistrar::class)->teams && !is_a($this, Role::class) ?
-			[app(PermissionRegistrar::class)->teamsKey => getPermissionsTeamId()] : [];
+        $model = $this->getModel();
+        $currentPermissions = $this->permissions;
 
-		if ($model->exists) {
-			$currentPermissions = $this->permissions->map(fn($permission) => $permission->getKey())->toArray();
+        $currentTenantNames = $currentPermissions->pluck('tenant_name')->unique()->toArray();
+        $newTenantNames = array_fill(0, count($permissions), $tenantName);
 
-			$this->permissions()->attach(array_diff($permissions, $currentPermissions), $teamPivot);
-			$model->unsetRelation('permissions');
-		} else {
-			$class = get_class($model);
+        if (count(array_diff($newTenantNames, $currentTenantNames)) > 0) {
+            $syncData = [];
 
-			$class::saved(
-				function ($object) use ($permissions, $model, $teamPivot) {
-					if ($model->getKey() != $object->getKey()) {
-						return;
-					}
-					$model->permissions()->attach($permissions, $teamPivot);
-					$model->unsetRelation('permissions');
-				}
-			);
-		}
+            foreach ($permissions as $permission) {
+                $syncData[$permission] = ['tenant_name' => $tenantName];
+            }
 
-		if (is_a($this, Role::class)) {
+            $this->permissions()->sync($syncData, true);
+        }
+
+        $model->unsetRelation('permissions');
+
+        if (is_a($this, Role::class)) {
 			$this->forgetCachedPermissions();
 		}
 
@@ -524,7 +512,7 @@ trait HasPermissions {
 	 * @param Permission|Permission[]|string|string[]|BackedEnum $permission
 	 * @return $this
 	 */
-	public function revokePermissionTo($permission)
+	public function revokePermissionTo($tenantName, $permission)
 	: static {
 		$this->permissions()->detach($this->getStoredPermission($permission));
 

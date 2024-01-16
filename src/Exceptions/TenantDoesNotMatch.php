@@ -7,7 +7,7 @@ use InvalidArgumentException;
 
 class TenantDoesNotMatch extends InvalidArgumentException
 {
-    public static function create(string $givenTenant, Collection $expectedTenants)
+    public static function create(string $givenTenant = 's', Collection $expectedTenants)
     : static {
         return new static("The given role or permission should use tenant `{$expectedTenants->implode(', ')}` instead of `{$givenTenant}`.");
     }
