@@ -1,5 +1,5 @@
 {
-    "name": "spatie/laravel-permission",
+    "name": "adrielzimbril/tenancy-laravel-permission",
     "description": "Stancl Tenancy Permission handling for Laravel 8.2 and up",
     "license": "MIT",
     "keywords": [
@@ -12,15 +12,6 @@
         "rbac",
         "security"
     ],
-    "authors": [
-        {
-            "name": "Freek Van der Herten",
-            "email": "freek@spatie.be",
-            "homepage": "https://spatie.be",
-            "role": "Developer"
-        }
-    ],
-    "homepage": "https://github.com/spatie/laravel-permission",
     "require": {
         "php": "^8.2",
         "illuminate/auth": "^8.12|^9.0|^10.0|^11.0",
