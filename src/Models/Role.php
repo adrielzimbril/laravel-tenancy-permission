@@ -16,6 +16,7 @@ use Oricodes\TenantPermission\Tenant;
 use Oricodes\TenantPermission\Traits\HasPermissions;
 use Oricodes\TenantPermission\Traits\RefreshesPermissionCache;
 use ReflectionException;
+use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
 /**
  * @property ?Carbon $created_at
@@ -24,10 +25,12 @@ use ReflectionException;
 class Role extends Model implements RoleContract {
 	use HasPermissions;
 	use RefreshesPermissionCache;
+	use CentralConnection;
 
 	protected $tenanted = [];
 
 	protected $fillable = [
+		'name',
 		'tenant_name',
 	];
 
@@ -120,7 +123,7 @@ class Role extends Model implements RoleContract {
 		$role = static::findByParam(['name' => $name, 'tenant_name' => $tenantName]);
 
 		if (!$role) {
-			return static::query()->create(['name'        => $name, 'tenant_name' => $tenantName
+			return static::query()->create(['name' => $name, 'tenant_name' => $tenantName
 				] + (app(PermissionRegistrar::class)->teams ? [app(PermissionRegistrar::class)->teamsKey => getPermissionsTeamId()] : []));
 		}
 

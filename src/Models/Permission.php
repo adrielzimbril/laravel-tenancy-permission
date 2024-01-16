@@ -14,6 +14,7 @@ use Oricodes\TenantPermission\PermissionRegistrar;
 use Oricodes\TenantPermission\Tenant;
 use Oricodes\TenantPermission\Traits\HasRoles;
 use Oricodes\TenantPermission\Traits\RefreshesPermissionCache;
+use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
 /**
  * @property ?Carbon $created_at
@@ -22,10 +23,12 @@ use Oricodes\TenantPermission\Traits\RefreshesPermissionCache;
 class Permission extends Model implements PermissionContract {
 	use HasRoles;
 	use RefreshesPermissionCache;
+	use CentralConnection;
 
 	protected $tenanted = [];
 
 	protected $fillable = [
+		'name',
 		'tenant_name',
 	];
 
