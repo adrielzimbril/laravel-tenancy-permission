@@ -35,7 +35,7 @@ class Role extends Model implements RoleContract
         parent::__construct($attributes);
 
         $this->guarded[] = $this->primaryKey;
-        $this->table = config('permission.table_names.roles') ?: parent::getTable();
+        $this->table = config('tenant-permission.table_names.roles') ?: parent::getTable();
     }
 
     /**
@@ -156,8 +156,8 @@ class Role extends Model implements RoleContract
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(
-            config('permission.models.permission'),
-            config('permission.table_names.role_has_permissions'),
+            config('tenant-permission.models.permission'),
+            config('tenant-permission.table_names.role_has_permissions'),
             app(PermissionRegistrar::class)->pivotRole,
             app(PermissionRegistrar::class)->pivotPermission
         );
@@ -175,9 +175,9 @@ class Role extends Model implements RoleContract
         return $this->morphedByMany(
             getModelForTenant(),
             'model',
-            config('permission.table_names.model_has_roles'),
+            config('tenant-permission.table_names.model_has_roles'),
             app(PermissionRegistrar::class)->pivotRole,
-            config('permission.column_names.model_morph_key')
+            config('tenant-permission.column_names.model_morph_key')
         );
     }
 

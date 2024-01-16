@@ -44,8 +44,8 @@ class PermissionRegistrar
      */
     public function __construct(CacheManager $cacheManager)
     {
-        $this->permissionClass = config('permission.models.permission');
-        $this->roleClass = config('permission.models.role');
+        $this->permissionClass = config('tenant-permission.models.permission');
+        $this->roleClass = config('tenant-permission.models.role');
 
         $this->cacheManager = $cacheManager;
         $this->initializeCache();
@@ -53,15 +53,15 @@ class PermissionRegistrar
 
     public function initializeCache(): void
     {
-        $this->cacheExpirationTime = config('permission.cache.expiration_time') ?: DateInterval::createFromDateString('24 hours');
+        $this->cacheExpirationTime = config('tenant-permission.cache.expiration_time') ?: DateInterval::createFromDateString('24 hours');
 
-        $this->teams = config('permission.teams', false);
-        $this->teamsKey = config('permission.column_names.team_foreign_key', 'team_id');
+        $this->teams = config('tenant-permission.teams', false);
+        $this->teamsKey = config('tenant-permission.column_names.team_foreign_key', 'team_id');
 
-        $this->cacheKey = config('permission.cache.key');
+        $this->cacheKey = config('tenant-permission.cache.key');
 
-        $this->pivotRole = config('permission.column_names.role_pivot_key') ?: 'role_id';
-        $this->pivotPermission = config('permission.column_names.permission_pivot_key') ?: 'permission_id';
+        $this->pivotRole = config('tenant-permission.column_names.role_pivot_key') ?: 'role_id';
+        $this->pivotPermission = config('tenant-permission.column_names.permission_pivot_key') ?: 'permission_id';
 
         $this->cache = $this->getCacheStoreFromConfig();
     }
@@ -70,7 +70,7 @@ class PermissionRegistrar
     {
         // the 'default' fallback here is from the tenant-permission.php config file,
         // where 'default' means to use config(cache.default)
-        $cacheDriver = config('permission.cache.store', 'default');
+        $cacheDriver = config('tenant-permission.cache.store', 'default');
 
         // when 'default' is specified, no action is required since we already have the default instance
         if ($cacheDriver === 'default') {
@@ -234,7 +234,7 @@ class PermissionRegistrar
 
     private function getSerializedPermissionsForCache(): array
     {
-        $this->except = config('permission.cache.column_names_except', ['created_at', 'updated_at', 'deleted_at']);
+        $this->except = config('tenant-permission.cache.column_names_except', ['created_at', 'updated_at', 'deleted_at']);
 
         $permissions = $this->getPermissionsWithRoles()
             ->map(function ($permission) {

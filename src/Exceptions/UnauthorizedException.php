@@ -15,7 +15,7 @@ class UnauthorizedException extends HttpException
     {
         $message = 'User does not have the right roles.';
 
-        if (config('permission.display_role_in_exception')) {
+        if (config('tenant-permission.display_role_in_exception')) {
             $message .= ' Necessary roles are '.implode(', ', $roles);
         }
 
@@ -29,7 +29,7 @@ class UnauthorizedException extends HttpException
     {
         $message = 'User does not have the right permissions.';
 
-        if (config('permission.display_permission_in_exception')) {
+        if (config('tenant-permission.display_permission_in_exception')) {
             $message .= ' Necessary permissions are '.implode(', ', $permissions);
         }
 
@@ -43,7 +43,7 @@ class UnauthorizedException extends HttpException
     {
         $message = 'User does not have any of the necessary access rights.';
 
-        if (config('permission.display_permission_in_exception') && config('permission.display_role_in_exception')) {
+        if (config('tenant-permission.display_permission_in_exception') && config('tenant-permission.display_role_in_exception')) {
             $message .= ' Necessary roles or permissions are '.implode(', ', $rolesOrPermissions);
         }
 

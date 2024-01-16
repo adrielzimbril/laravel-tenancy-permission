@@ -33,7 +33,7 @@ class Permission extends Model implements PermissionContract
         parent::__construct($attributes);
 
         $this->guarded[] = $this->primaryKey;
-        $this->table = config('permission.table_names.permissions') ?: parent::getTable();
+        $this->table = config('tenant-permission.table_names.permissions') ?: parent::getTable();
     }
 
 	/**
@@ -136,8 +136,8 @@ class Permission extends Model implements PermissionContract
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(
-            config('permission.models.role'),
-            config('permission.table_names.role_has_permissions'),
+            config('tenant-permission.models.role'),
+            config('tenant-permission.table_names.role_has_permissions'),
             app(PermissionRegistrar::class)->pivotPermission,
             app(PermissionRegistrar::class)->pivotRole
         );
@@ -151,9 +151,9 @@ class Permission extends Model implements PermissionContract
         return $this->morphedByMany(
             getModelForTenant(),
             'model',
-            config('permission.table_names.model_has_permissions'),
+            config('tenant-permission.table_names.model_has_permissions'),
             app(PermissionRegistrar::class)->pivotPermission,
-            config('permission.column_names.model_morph_key')
+            config('tenant-permission.column_names.model_morph_key')
         );
     }
 }

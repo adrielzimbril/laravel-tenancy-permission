@@ -20,8 +20,8 @@ class Show extends Command
     : void {
         $permissionClass = app(PermissionContract::class);
         $roleClass = app(RoleContract::class);
-        $teamsEnabled = config('permission.teams');
-        $team_key = config('permission.column_names.team_foreign_key');
+        $teamsEnabled = config('tenant-permission.teams');
+        $team_key = config('tenant-permission.column_names.team_foreign_key');
 
         $style = $this->argument('style') ?? 'default';
         $tenant = $this->argument('tenant');

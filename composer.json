@@ -10,8 +10,16 @@
         "roles",
         "acl",
         "rbac",
-        "security"
+        "security",
+        "oricodes"
     ],
+    "authors": [
+        {
+            "name": "Adriel Zimbril",
+            "email": "adrielzimbril@oricodes.com"
+        }
+    ],
+    "homepage": "https://github.com/oricodes/paymentgateway",
     "require": {
         "php": "^8.2",
         "illuminate/auth": "^8.12|^9.0|^10.0|^11.0",

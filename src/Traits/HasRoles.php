@@ -43,10 +43,10 @@ trait HasRoles
     public function roles(): BelongsToMany
     {
         $relation = $this->morphToMany(
-            config('permission.models.role'),
+            config('tenant-permission.models.role'),
             'model',
-            config('permission.table_names.model_has_roles'),
-            config('permission.column_names.model_morph_key'),
+            config('tenant-permission.table_names.model_has_roles'),
+            config('tenant-permission.column_names.model_morph_key'),
             app(PermissionRegistrar::class)->pivotRole
         );
 
@@ -54,7 +54,7 @@ trait HasRoles
             return $relation;
         }
 
-        $teamField = config('permission.table_names.roles').'.'.app(PermissionRegistrar::class)->teamsKey;
+        $teamField = config('tenant-permission.table_names.roles').'.'.app(PermissionRegistrar::class)->teamsKey;
 
         return $relation->wherePivot(app(PermissionRegistrar::class)->teamsKey, getPermissionsTeamId())
             ->where(fn ($q) => $q->whereNull($teamField)->orWhere($teamField, getPermissionsTeamId()));
@@ -101,7 +101,7 @@ trait HasRoles
         $key = (new ($this->getRoleClass())())->getKeyName();
 
         return $query->{! $without ? 'whereHas' : 'whereDoesntHave'}('roles', fn (Builder $subQuery) => $subQuery
-            ->whereIn(config('permission.table_names.roles').".$key", array_column($roles, $key))
+            ->whereIn(config('tenant-permission.table_names.roles').".$key", array_column($roles, $key))
         );
     }
 

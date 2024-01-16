@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $teams = config('permission.teams');
-        $tableNames = config('permission.table_names');
-        $columnNames = config('permission.column_names');
+        $teams = config('tenant-permission.teams');
+        $tableNames = config('tenant-permission.table_names');
+        $columnNames = config('tenant-permission.column_names');
         $pivotRole = $columnNames['role_pivot_key'] ?? 'role_id';
         $pivotPermission = $columnNames['permission_pivot_key'] ?? 'permission_id';
 
@@ -35,14 +35,14 @@ return new class extends Migration
 
         Schema::create($tableNames['roles'], function (Blueprint $table) use ($teams, $columnNames) {
             $table->bigIncrements('id'); // role id
-            if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
+            if ($teams || config('tenant-permission.testing')) { // permission.testing is a fix for sqlite testing
                 $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
                 $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
             }
             $table->string('name');       // For MySQL 8.0 use string('name', 125);
             $table->string('tenant_name'); // For MySQL 8.0 use string('tenant_name', 125);
             $table->timestamps();
-            if ($teams || config('permission.testing')) {
+            if ($teams || config('tenant-permission.testing')) {
                 $table->unique([$columnNames['team_foreign_key'], 'name', 'tenant_name']);
             } else {
                 $table->unique(['name', 'tenant_name']);
@@ -114,8 +114,8 @@ return new class extends Migration
         });
 
         app('cache')
-            ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
-            ->forget(config('permission.cache.key'));
+            ->store(config('tenant-permission.cache.store') != 'default' ? config('tenant-permission.cache.store') : null)
+            ->forget(config('tenant-permission.cache.key'));
     }
 
     /**
@@ -123,7 +123,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $tableNames = config('permission.table_names');
+        $tableNames = config('tenant-permission.table_names');
 
         if (empty($tableNames)) {
             throw new Exception('Error: config/tenant-permission.php not found and defaults could not be merged. Please publish the package configuration before proceeding, or drop the tables manually.');
