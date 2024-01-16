@@ -10,13 +10,14 @@ use Illuminate\Support\Collection;
 use Oricodes\TenantPermission\Contracts\Permission;
 use Oricodes\TenantPermission\Contracts\Role;
 use Oricodes\TenantPermission\Contracts\Wildcard;
-use Oricodes\TenantPermission\Exceptions\GuardDoesNotMatch;
 use Oricodes\TenantPermission\Exceptions\PermissionDoesNotExist;
+use Oricodes\TenantPermission\Exceptions\TenantDoesNotMatch;
 use Oricodes\TenantPermission\Exceptions\WildcardPermissionInvalidArgument;
 use Oricodes\TenantPermission\Exceptions\WildcardPermissionNotImplementsContract;
-use Oricodes\TenantPermission\Guard;
 use Oricodes\TenantPermission\PermissionRegistrar;
+use Oricodes\TenantPermission\Tenant;
 use Oricodes\TenantPermission\WildcardPermission;
+use ReflectionException;
 use function array_column;
 use function get_class;
 
@@ -129,7 +130,7 @@ trait HasPermissions
 
             $method = is_int($permission) || PermissionRegistrar::isUid($permission) ? 'findById' : 'findByName';
 
-            return $this->getPermissionClass()::{$method}($permission, $this->getDefaultGuardName());
+            return $this->getPermissionClass()::{$method}($permission, $this->getDefaultTenantName());
         }, Arr::wrap($permissions));
     }
 
@@ -142,7 +143,7 @@ trait HasPermissions
         return $this->permissionClass;
     }
 
-    protected function getDefaultGuardName(): string
+    protected function getDefaultTenantName(): string
     {
         return tenant()->id;
     }
@@ -226,7 +227,7 @@ trait HasPermissions
      */
     protected function hasWildcardPermission($permission, $tenantName = null): bool
     {
-        $tenantName = $tenantName ?? $this->getDefaultGuardName();
+        $tenantName = $tenantName ?? $this->getDefaultTenantName();
 
         if ($permission instanceof BackedEnum) {
             $permission = $permission->value;
@@ -268,14 +269,14 @@ trait HasPermissions
         if (is_int($permission) || PermissionRegistrar::isUid($permission)) {
             $permission = $this->getPermissionClass()::findById(
                 $permission,
-                $tenantName ?? $this->getDefaultGuardName()
+                $tenantName ?? $this->getDefaultTenantName()
             );
         }
 
         if (is_string($permission)) {
             $permission = $this->getPermissionClass()::findByName(
                 $permission,
-                $tenantName ?? $this->getDefaultGuardName()
+                $tenantName ?? $this->getDefaultTenantName()
             );
         }
 
@@ -396,7 +397,7 @@ trait HasPermissions
                 }
 
                 if (! in_array($permission->getKey(), $array)) {
-                    $this->ensureModelSharesGuard($permission);
+                    $this->ensureModelSharesTenant($permission);
                     $array[] = $permission->getKey();
                 }
 
@@ -415,11 +416,11 @@ trait HasPermissions
         }
 
         if (is_int($permissions) || PermissionRegistrar::isUid($permissions)) {
-            return $this->getPermissionClass()::findById($permissions, $this->getDefaultGuardName());
+            return $this->getPermissionClass()::findById($permissions, $this->getDefaultTenantName());
         }
 
         if (is_string($permissions)) {
-            return $this->getPermissionClass()::findByName($permissions, $this->getDefaultGuardName());
+            return $this->getPermissionClass()::findByName($permissions, $this->getDefaultTenantName());
         }
 
         if (is_array($permissions)) {
@@ -432,27 +433,31 @@ trait HasPermissions
             }, $permissions);
 
             return $this->getPermissionClass()::whereIn('name', $permissions)
-                ->whereIn('tenant_name', $this->getGuardNames())
+                ->whereIn('tenant_name', $this->getTenantNames())
                 ->get();
         }
 
         return $permissions;
     }
 
-    protected function getGuardNames(): Collection
+	/**
+	 * @throws ReflectionException
+	 */
+	protected function getTenantNames(): Collection
     {
-        return Guard::getNames($this);
+        return Tenant::getNames($this);
     }
 
-    /**
-     * @param  Permission|Role  $roleOrPermission
-     *
-     * @throws GuardDoesNotMatch
-     */
-    protected function ensureModelSharesGuard($roleOrPermission)
+	/**
+	 * @param Permission|Role $roleOrPermission
+	 *
+	 * @throws TenantDoesNotMatch
+	 * @throws ReflectionException
+	 */
+    protected function ensureModelSharesTenant($roleOrPermission)
     : void {
-        if (! $this->getGuardNames()->contains($roleOrPermission->guard_name)) {
-            throw GuardDoesNotMatch::create($roleOrPermission->guard_name, $this->getGuardNames());
+        if (! $this->getTenantNames()->contains($roleOrPermission->tenant_name)) {
+            throw TenantDoesNotMatch::create($roleOrPermission->tenant_name, $this->getTenantNames());
         }
     }
 

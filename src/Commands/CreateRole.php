@@ -11,7 +11,7 @@ class CreateRole extends Command
 {
     protected $signature = 'permission:create-role
         {name : The name of the role}
-        {guard? : The name of the guard}
+        {tenant? : The name of the tenant}
         {permissions? : A list of permissions to assign to the role, separated by | }
         {--team-id=}';
 
@@ -30,7 +30,7 @@ class CreateRole extends Command
             return;
         }
 
-        $role = $roleClass::findOrCreate($this->argument('name'), $this->argument('guard'));
+        $role = $roleClass::findOrCreate($this->argument('name'), $this->argument('tenant'));
         setPermissionsTeamId($teamIdAux);
 
         $teams_key = $permissionRegistrar->teamsKey;
@@ -59,7 +59,7 @@ class CreateRole extends Command
         $models = [];
 
         foreach ($permissions as $permission) {
-            $models[] = $permissionClass::findOrCreate(trim($permission), $this->argument('guard'));
+            $models[] = $permissionClass::findOrCreate(trim($permission), $this->argument('tenant'));
         }
 
         return collect($models);

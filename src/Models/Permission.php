@@ -10,8 +10,8 @@ use Illuminate\Support\Carbon;
 use Oricodes\TenantPermission\Contracts\Permission as PermissionContract;
 use Oricodes\TenantPermission\Exceptions\PermissionAlreadyExists;
 use Oricodes\TenantPermission\Exceptions\PermissionDoesNotExist;
-use Oricodes\TenantPermission\Guard;
 use Oricodes\TenantPermission\PermissionRegistrar;
+use Oricodes\TenantPermission\Tenant;
 use Oricodes\TenantPermission\Traits\HasRoles;
 use Oricodes\TenantPermission\Traits\RefreshesPermissionCache;
 
@@ -28,7 +28,7 @@ class Permission extends Model implements PermissionContract
 
     public function __construct(array $attributes = [])
     {
-        $attributes['tenant_name'] = $attributes['tenant_name'] ?? config('auth.defaults.guard');
+        $attributes['tenant_name'] = $attributes['tenant_name'] ?? tenant()->id;
 
         parent::__construct($attributes);
 
@@ -37,7 +37,7 @@ class Permission extends Model implements PermissionContract
     }
 
     /**
-     * Find a permission by its name (and optionally guardName).
+     * Find a permission by its name (and optionally tenantName).
      *
      * @return PermissionContract|Permission
      *
@@ -45,7 +45,7 @@ class Permission extends Model implements PermissionContract
      */
     public static function findByName(string $name, ?string $tenantName = null): PermissionContract
     {
-        $tenantName = $tenantName ?? Guard::getDefaultName(static::class);
+        $tenantName = $tenantName ?? Tenant::getDefaultName();
         $permission = static::getPermission(['name' => $name, 'tenant_name' => $tenantName]);
         if (! $permission) {
             throw PermissionDoesNotExist::create($name, $tenantName);
@@ -54,11 +54,12 @@ class Permission extends Model implements PermissionContract
         return $permission;
     }
 
-    /**
-     * Get the current cached first permission.
-     *
-     * @return PermissionContract|Permission|null
-     */
+	/**
+	 * Get the current cached first permission.
+	 *
+	 * @param array $params
+	 * @return PermissionContract|null
+	 */
     protected static function getPermission(array $params = []): ?PermissionContract
     {
         /** @var PermissionContract|null */
@@ -82,7 +83,7 @@ class Permission extends Model implements PermissionContract
      */
     public static function create(array $attributes = [])
     : Model | Builder {
-        $attributes['tenant_name'] = $attributes['tenant_name'] ?? Guard::getDefaultName(static::class);
+        $attributes['tenant_name'] = $attributes['tenant_name'] ?? Tenant::getDefaultName();
 
         $permission = static::getPermission(['name' => $attributes['name'], 'tenant_name' => $attributes['tenant_name']]);
 
@@ -94,7 +95,7 @@ class Permission extends Model implements PermissionContract
     }
 
     /**
-     * Find a permission by its id (and optionally guardName).
+     * Find a permission by its id (and optionally tenantName).
      *
      * @return PermissionContract|Permission
      *
@@ -102,7 +103,7 @@ class Permission extends Model implements PermissionContract
      */
     public static function findById(int|string $id, ?string $tenantName = null): PermissionContract
     {
-        $tenantName = $tenantName ?? Guard::getDefaultName(static::class);
+        $tenantName = $tenantName ?? Tenant::getDefaultName();
         $permission = static::getPermission([(new static())->getKeyName() => $id, 'tenant_name' => $tenantName]);
 
         if (! $permission) {
@@ -113,12 +114,12 @@ class Permission extends Model implements PermissionContract
     }
 
     /**
-     * Find or create permission by its name (and optionally guardName).
+     * Find or create permission by its name (and optionally tenantName).
      *
      * @return PermissionContract
      */
     public static function findOrCreate(string $name, ?string $tenantName = null): PermissionContract {
-        $tenantName = $tenantName ?? Guard::getDefaultName(static::class);
+        $tenantName = $tenantName ?? Tenant::getDefaultName();
         $permission = static::getPermission(['name' => $name, 'tenant_name' => $tenantName]);
 
         if (! $permission) {
@@ -142,7 +143,7 @@ class Permission extends Model implements PermissionContract
     }
 
     /**
-     * A permission belongs to some users of the model associated with its guard.
+     * A permission belongs to some users of the model associated with its tenant.
      */
     public function users(): BelongsToMany
     {

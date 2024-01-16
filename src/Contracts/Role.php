@@ -15,7 +15,7 @@ use Oricodes\TenantPermission\Exceptions\RoleDoesNotExist;
 interface Role
 {
     /**
-     * Find a role by its name and guard name.
+     * Find a role by its name and tenant name.
      *
      *
      * @throws RoleDoesNotExist
@@ -23,7 +23,7 @@ interface Role
     public static function findByName(string $name, ?string $tenantName): self;
 
     /**
-     * Find a role by its id and guard name.
+     * Find a role by its id and tenant name.
      *
      *
      * @throws RoleDoesNotExist
@@ -31,7 +31,7 @@ interface Role
     public static function findById(int|string $id, ?string $tenantName): self;
 
     /**
-     * Find or create a role by its name and guard name.
+     * Find or create a role by its name and tenant name.
      */
     public static function findOrCreate(string $name, ?string $tenantName): self;
 

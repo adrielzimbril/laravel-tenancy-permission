@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 use Oricodes\TenantPermission\Contracts\Role as RoleContract;
-use Oricodes\TenantPermission\Exceptions\GuardDoesNotMatch;
 use Oricodes\TenantPermission\Exceptions\PermissionDoesNotExist;
 use Oricodes\TenantPermission\Exceptions\RoleAlreadyExists;
 use Oricodes\TenantPermission\Exceptions\RoleDoesNotExist;
+use Oricodes\TenantPermission\Exceptions\TenantDoesNotMatch;
 use Oricodes\TenantPermission\PermissionRegistrar;
+use Oricodes\TenantPermission\Tenant;
 use Oricodes\TenantPermission\Traits\HasPermissions;
 use Oricodes\TenantPermission\Traits\RefreshesPermissionCache;
+use ReflectionException;
 
 /**
  * @property ?Carbon $created_at
@@ -28,7 +30,7 @@ class Role extends Model implements RoleContract
 
     public function __construct(array $attributes = [])
     {
-        $attributes['tenant_name'] = $attributes['tenant_name'] ?? config('auth.defaults.guard');
+        $attributes['tenant_name'] = $attributes['tenant_name'] ?? tenant()->id;
 
         parent::__construct($attributes);
 
@@ -37,7 +39,7 @@ class Role extends Model implements RoleContract
     }
 
     /**
-     * Find a role by its name and guard name.
+     * Find a role by its name and tenant name.
      *
      * @return RoleContract|Role
      *
@@ -45,7 +47,7 @@ class Role extends Model implements RoleContract
      */
     public static function findByName(string $name, ?string $tenantName = null): RoleContract
     {
-        $tenantName = $tenantName;
+        $tenantName = $tenantName ?? Tenant::getDefaultName();
 
         $role = static::findByParam(['name' => $name, 'tenant_name' => $tenantName]);
 
@@ -59,7 +61,6 @@ class Role extends Model implements RoleContract
     /**
      * Finds a role based on an array of parameters.
      *
-     * @return RoleContract|Role|null
      */
     protected static function findByParam(array $params = []): ?RoleContract
     {
@@ -81,14 +82,17 @@ class Role extends Model implements RoleContract
         return $query->first();
     }
 
-    /**
-     * Find a role by its id (and optionally guardName).
-     *
-     * @return RoleContract|Role
-     */
+	/**
+	 * Find a role by its id (and optionally tenantName).
+	 *
+	 * @param int|string $id
+	 * @param string|null $tenantName
+	 * @return RoleContract
+	 * @throws ReflectionException
+	 */
     public static function findById(int|string $id, ?string $tenantName = null): RoleContract
     {
-        $tenantName = $tenantName;
+        $tenantName = $tenantName ?? Tenant::getDefaultName();
 
         $role = static::findByParam([(new static())->getKeyName() => $id, 'tenant_name' => $tenantName]);
 
@@ -99,14 +103,17 @@ class Role extends Model implements RoleContract
         return $role;
     }
 
-    /**
-     * Find or create role by its name (and optionally guardName).
-     *
-     * @return RoleContract|Role
-     */
+	/**
+	 * Find or create role by its name (and optionally tenantName).
+	 *
+	 * @param string $name
+	 * @param string|null $tenantName
+	 * @return RoleContract
+	 * @throws ReflectionException
+	 */
     public static function findOrCreate(string $name, ?string $tenantName = null): RoleContract
     {
-        $tenantName = $tenantName;
+        $tenantName = $tenantName ?? Tenant::getDefaultName();
 
         $role = static::findByParam(['name' => $name, 'tenant_name' => $tenantName]);
 
@@ -124,7 +131,7 @@ class Role extends Model implements RoleContract
      */
     public static function create(array $attributes = [])
     : Role | RoleContract {
-        $attributes['tenant_name'] = $attributes['tenant_name'];
+        $attributes['tenant_name'] = $attributes['tenant_name'] ?? Tenant::getDefaultName();
 
         $params = ['name' => $attributes['name'], 'tenant_name' => $attributes['tenant_name']];
         if (app(PermissionRegistrar::class)->teams) {
@@ -157,13 +164,13 @@ class Role extends Model implements RoleContract
     }
 
     /**
-     * A role belongs to some users of the model associated with its guard.
+     * A role belongs to some users of the model associated with its tenant.
      */
     public function users(): BelongsToMany
     {
 	    $tenantId = '';
 
-		$r = tenancy()->getTenant($tenantId)->make(User::class);
+		$r = tenancy()->getTenant($tenantId)->make(TenantUser::class);
 
         return $this->morphedByMany(
             getModelForTenant(),
@@ -179,7 +186,7 @@ class Role extends Model implements RoleContract
      *
      * @param  string|int|Permission|BackedEnum  $permission
      *
-     * @throws PermissionDoesNotExist|GuardDoesNotMatch
+     * @throws PermissionDoesNotExist|TenantDoesNotMatch
      */
     public function hasPermissionTo($permission, ?string $tenantName = null): bool
     {
@@ -189,8 +196,8 @@ class Role extends Model implements RoleContract
 
         $permission = $this->filterPermission($permission, $tenantName);
 
-        if (! $this->getGuardNames()->contains($permission->guard_name)) {
-            throw GuardDoesNotMatch::create($permission->guard_name, $tenantName ?? $this->getGuardNames());
+        if (! $this->getTenantNames()->contains($permission->tenant_name)) {
+            throw TenantDoesNotMatch::create($permission->tenant_name, $tenantName ?? $this->getTenantNames());
         }
 
         return $this->permissions->contains($permission->getKeyName(), $permission->getKey());

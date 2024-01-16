@@ -9,7 +9,7 @@ class CreatePermission extends Command
 {
     protected $signature = 'permission:create-permission 
                 {name : The name of the permission} 
-                {guard? : The name of the guard}';
+                {tenant? : The name of the tenant}';
 
     protected $description = 'Create a permission';
 
@@ -17,7 +17,7 @@ class CreatePermission extends Command
     {
         $permissionClass = app(PermissionContract::class);
 
-        $permission = $permissionClass::findOrCreate($this->argument('name'), $this->argument('guard'));
+        $permission = $permissionClass::findOrCreate($this->argument('name'), $this->argument('tenant'));
 
         $this->info("Permission `{$permission->name}` ".($permission->wasRecentlyCreated ? 'created' : 'already exists'));
     }

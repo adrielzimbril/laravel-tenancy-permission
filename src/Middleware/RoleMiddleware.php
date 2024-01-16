@@ -3,14 +3,12 @@
 namespace Oricodes\TenantPermission\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Auth;
 use Oricodes\TenantPermission\Exceptions\UnauthorizedException;
-use Oricodes\TenantPermission\Guard;
 
 class RoleMiddleware
 {
     /**
-     * Specify the role and guard for the middleware.
+     * Specify the role and tenant for the middleware.
      *
      * @param array|string $role
      * @param string|null $tenant
@@ -26,14 +24,7 @@ class RoleMiddleware
 
     public function handle($request, Closure $next, $role, $tenant = null)
     {
-        $authGuard = Auth::guard($tenant);
-
-        $user = $authGuard->user();
-
-        // For machine-to-machine Passport clients
-        if (! $user && $request->bearerToken() && config('permission.use_passport_client_credentials')) {
-            $user = Guard::getPassportClient($tenant);
-        }
+        $user = $tenant ? tenant($tenant)->user : tenant()->user;
 
         if (! $user) {
             throw UnauthorizedException::notLoggedIn();

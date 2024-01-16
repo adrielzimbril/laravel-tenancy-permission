@@ -95,7 +95,7 @@ trait HasRoles
 
             $method = is_int($role) || PermissionRegistrar::isUid($role) ? 'findById' : 'findByName';
 
-            return $this->getRoleClass()::{$method}($role, $tenant ?: $this->getDefaultGuardName());
+            return $this->getRoleClass()::{$method}($role, $tenant ?: $this->getDefaultTenantName());
         }, Arr::wrap($roles));
 
         $key = (new ($this->getRoleClass())())->getKeyName();
@@ -139,11 +139,11 @@ trait HasRoles
         }
 
         if (is_int($role) || PermissionRegistrar::isUid($role)) {
-            return $this->getRoleClass()::findById($role, $this->getDefaultGuardName());
+            return $this->getRoleClass()::findById($role, $this->getDefaultTenantName());
         }
 
         if (is_string($role)) {
-            return $this->getRoleClass()::findByName($role, $this->getDefaultGuardName());
+            return $this->getRoleClass()::findByName($role, $this->getDefaultTenantName());
         }
 
         return $role;
@@ -186,7 +186,7 @@ trait HasRoles
                 }
 
                 if (! in_array($role->getKey(), $array)) {
-                    $this->ensureModelSharesGuard($role);
+                    $this->ensureModelSharesTenant($role);
                     $array[] = $role->getKey();
                 }
 
@@ -201,7 +201,7 @@ trait HasRoles
      * @return $this
      */
     public function assignRole(...$roles)
-    {
+    : static {
         $roles = $this->collectRoles($roles);
 
         $model = $this->getModel();
@@ -237,7 +237,7 @@ trait HasRoles
     /**
      * Determine if the model has any of the given role(s).
      *
-     * Alias to hasRole() but without Guard controls
+     * Alias to hasRole() but without Tenant controls
      *
      * @param  string|int|array|Role|Collection|BackedEnum  $roles
      */
@@ -255,7 +255,7 @@ trait HasRoles
     {
         $this->loadMissing('roles');
 
-        if (is_string($roles) && strpos($roles, '|') !== false) {
+        if (is_string($roles) && str_contains($roles, '|')) {
             $roles = $this->convertPipeToArray($roles);
         }
 
@@ -329,7 +329,7 @@ trait HasRoles
     {
         $this->loadMissing('roles');
 
-        if (is_string($roles) && strpos($roles, '|') !== false) {
+        if (is_string($roles) && str_contains($roles, '|')) {
             $roles = $this->convertPipeToArray($roles);
         }
 
@@ -360,7 +360,7 @@ trait HasRoles
             $roles = $roles->value;
         }
 
-        if (is_string($roles) && strpos($roles, '|') !== false) {
+        if (is_string($roles) && str_contains($roles, '|')) {
             $roles = $this->convertPipeToArray($roles);
         }
 

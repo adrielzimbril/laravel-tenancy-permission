@@ -11,20 +11,20 @@ use Symfony\Component\Console\Helper\TableCell;
 class Show extends Command
 {
     protected $signature = 'permission:show
-            {guard? : The name of the guard}
+            {tenant? : The name of the tenant}
             {style? : The display style (default|borderless|compact|box)}';
 
-    protected $description = 'Show a table of roles and permissions per guard';
+    protected $description = 'Show a table of roles and permissions per tenant';
 
     public function handle()
-    {
+    : void {
         $permissionClass = app(PermissionContract::class);
         $roleClass = app(RoleContract::class);
         $teamsEnabled = config('permission.teams');
         $team_key = config('permission.column_names.team_foreign_key');
 
         $style = $this->argument('style') ?? 'default';
-        $tenant = $this->argument('guard');
+        $tenant = $this->argument('tenant');
 
         if ($tenant) {
             $tenants = Collection::make([$tenant]);
@@ -33,7 +33,7 @@ class Show extends Command
         }
 
         foreach ($tenants as $tenant) {
-            $this->info("Guard: $tenant");
+            $this->info("Tenant: $tenant");
 
             $roles = $roleClass::whereGuardName($tenant)
                 ->with('permissions')

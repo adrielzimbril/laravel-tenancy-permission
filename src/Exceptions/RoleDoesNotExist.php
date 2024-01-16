@@ -8,7 +8,7 @@ class RoleDoesNotExist extends InvalidArgumentException
 {
     public static function named(string $roleName, ?string $tenantName)
     {
-        return new static("There is no role named `{$roleName}` for guard `{$tenantName}`.");
+        return new static("There is no role named `{$roleName}` for tenant `{$tenantName}`.");
     }
 
     /**
@@ -17,6 +17,6 @@ class RoleDoesNotExist extends InvalidArgumentException
      */
     public static function withId($roleId, ?string $tenantName)
     {
-        return new static("There is no role with ID `{$roleId}` for guard `{$tenantName}`.");
+        return new static("There is no role with ID `{$roleId}` for tenant `{$tenantName}`.");
     }
 }

@@ -31,7 +31,7 @@ interface Permission
     public static function findById(int|string $id, ?string $tenantName): self;
 
     /**
-     * Find or Create a permission by its name and guard name.
+     * Find or Create a permission by its name and tenant name.
      */
     public static function findOrCreate(string $name, ?string $tenantName): self;
 
