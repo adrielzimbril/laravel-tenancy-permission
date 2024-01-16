@@ -36,13 +36,14 @@ class Permission extends Model implements PermissionContract
         $this->table = config('permission.table_names.permissions') ?: parent::getTable();
     }
 
-    /**
-     * Find a permission by its name (and optionally tenantName).
-     *
-     * @return PermissionContract|Permission
-     *
-     * @throws PermissionDoesNotExist
-     */
+	/**
+	 * Find a permission by its name (and optionally tenantName).
+	 *
+	 * @param string $name
+	 * @param string|null $tenantName
+	 * @return PermissionContract
+	 *
+	 */
     public static function findByName(string $name, ?string $tenantName = null): PermissionContract
     {
         $tenantName = $tenantName ?? Tenant::getDefaultName();

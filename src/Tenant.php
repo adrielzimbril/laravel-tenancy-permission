@@ -31,6 +31,7 @@ class Tenant
 	 */
     public static function getNames(Model | string $model): Collection
     {
+		/*
         $class = is_object($model) ? get_class($model) : $model;
 
         if (is_object($model)) {
@@ -49,7 +50,12 @@ class Tenant
             return collect($tenantName);
         }
 
-        return self::getConfigAuthGuards($class);
+	    return self::getConfigAuthGuards($class);
+		*/
+
+	    $tenantName = tenant()->tenants->pluck('id');
+
+	    return collect($tenantName);
     }
 
     /**

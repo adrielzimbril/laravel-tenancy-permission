@@ -65,6 +65,12 @@
       <data directive="@endsection" />
       <data directive="@endslot" />
       <data directive="@endswitch" />
+      <data directive="@endtenanthasallroles" />
+      <data directive="@endtenanthasanyrole" />
+      <data directive="@endtenanthasexactroles" />
+      <data directive="@endtenanthasrole" />
+      <data directive="@endtenantrole" />
+      <data directive="@endtenantunlessrole" />
       <data directive="@endunless" />
       <data directive="@endunlessrole" />
       <data directive="@endverbatim" />
@@ -117,6 +123,12 @@
       <data directive="@stop" />
       <data directive="@style" injection="true" prefix="style=&quot;&lt;?php&#10;echo \Illuminate\Support\Arr::toCssStyles(" suffix=") ?&gt;&quot;" />
       <data directive="@switch" injection="true" prefix="&lt;?php&#10;switch(" suffix="): ?&gt;" />
+      <data directive="@tenanthasallroles" injection="true" prefix="&lt;?php if(\Oricodes\TenantPermission\PermissionServiceProvider::bladeMethodWrapper('hasAllRoles', {" suffix="})): ?&gt;" />
+      <data directive="@tenanthasanyrole" injection="true" prefix="&lt;?php if(\Oricodes\TenantPermission\PermissionServiceProvider::bladeMethodWrapper('hasAnyRole', {" suffix="})): ?&gt;" />
+      <data directive="@tenanthasexactroles" injection="true" prefix="&lt;?php if(\Oricodes\TenantPermission\PermissionServiceProvider::bladeMethodWrapper('hasExactRoles', {" suffix="})): ?&gt;" />
+      <data directive="@tenanthasrole" injection="true" prefix="&lt;?php if(\Oricodes\TenantPermission\PermissionServiceProvider::bladeMethodWrapper('hasRole', {" suffix="})): ?&gt;" />
+      <data directive="@tenantrole" injection="true" prefix="&lt;?php if(\Oricodes\TenantPermission\PermissionServiceProvider::bladeMethodWrapper('hasRole', {" suffix="})): ?&gt;" />
+      <data directive="@tenantunlessrole" injection="true" prefix="&lt;?php if(! \Oricodes\TenantPermission\PermissionServiceProvider::bladeMethodWrapper('hasRole', {" suffix="})): ?&gt;" />
       <data directive="@unless" injection="true" prefix="&lt;?php&#10;if (! (" suffix=")): ?&gt;" />
       <data directive="@unlessrole" injection="true" prefix="&lt;?php if(! \Oricodes\TenantPermission\PermissionServiceProvider::bladeMethodWrapper('hasRole', {" suffix="})): ?&gt;" />
       <data directive="@unset" injection="true" prefix="&lt;?php&#10;unset(" suffix="); ?&gt;" />

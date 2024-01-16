@@ -3,7 +3,7 @@
     "blade": {
         "directives": [
             {
-                "name": "role",
+                "name": "tenantrole",
                 "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
                 "suffix": "})): ?>"
             },
@@ -13,57 +13,57 @@
                 "suffix": "})): ?>"
             },
             {
-                "name": "endrole",
+                "name": "endtenantrole",
                 "prefix": "",
                 "suffix": ""
             },
             {
-                "name": "hasrole",
+                "name": "tenanthasrole",
                 "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
                 "suffix": "})): ?>"
             },
             {
-                "name": "endhasrole",
+                "name": "endtenanthasrole",
                 "prefix": "",
                 "suffix": ""
             },
             {
-                "name": "hasanyrole",
+                "name": "tenanthasanyrole",
                 "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasAnyRole', {",
                 "suffix": "})): ?>"
             },
             {
-                "name": "endhasanyrole",
+                "name": "endtenanthasanyrole",
                 "prefix": "",
                 "suffix": ""
             },
             {
-                "name": "hasallroles",
+                "name": "tenanthasallroles",
                 "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasAllRoles', {",
                 "suffix": "})): ?>"
             },
             {
-                "name": "endhasallroles",
+                "name": "endtenanthasallroles",
                 "prefix": "",
                 "suffix": ""
             },
             {
-                "name": "unlessrole",
+                "name": "tenantunlessrole",
                 "prefix": "<?php if(! \\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasRole', {",
                 "suffix": "})): ?>"
             },
             {
-                "name": "endunlessrole",
+                "name": "endtenantunlessrole",
                 "prefix": "",
                 "suffix": ""
             },
             {
-                "name": "hasexactroles",
+                "name": "tenanthasexactroles",
                 "prefix": "<?php if(\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper('hasExactRoles', {",
                 "suffix": "})): ?>"
             },
             {
-                "name": "endhasexactroles",
+                "name": "endtenanthasexactroles",
                 "prefix": "",
                 "suffix": ""
             }

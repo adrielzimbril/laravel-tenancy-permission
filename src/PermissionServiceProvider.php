@@ -159,27 +159,27 @@ class PermissionServiceProvider extends ServiceProvider
     {
         $bladeMethodWrapper = '\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper';
 
-        $bladeCompiler->directive('role', fn ($args) => "<?php if({$bladeMethodWrapper}('hasRole', {$args})): ?>");
+        $bladeCompiler->directive('tenantrole', fn ($args) => "<?php if({$bladeMethodWrapper}('hasRole', {$args})): ?>");
         $bladeCompiler->directive('elserole', fn ($args) => "<?php elseif({$bladeMethodWrapper}('hasRole', {$args})): ?>");
-        $bladeCompiler->directive('endrole', fn () => '<?php endif; ?>');
+        $bladeCompiler->directive('endtenantrole', fn () => '<?php endif; ?>');
 
-        $bladeCompiler->directive('haspermission', fn ($args) => "<?php if({$bladeMethodWrapper}('checkPermissionTo', {$args})): ?>");
+        $bladeCompiler->directive('tenanthaspermission', fn ($args) => "<?php if({$bladeMethodWrapper}('checkPermissionTo', {$args})): ?>");
         $bladeCompiler->directive('elsehaspermission', fn ($args) => "<?php elseif({$bladeMethodWrapper}('checkPermissionTo', {$args})): ?>");
-        $bladeCompiler->directive('endhaspermission', fn () => '<?php endif; ?>');
+        $bladeCompiler->directive('endtenanthaspermission', fn () => '<?php endif; ?>');
 
-        $bladeCompiler->directive('hasrole', fn ($args) => "<?php if({$bladeMethodWrapper}('hasRole', {$args})): ?>");
-        $bladeCompiler->directive('endhasrole', fn () => '<?php endif; ?>');
+        $bladeCompiler->directive('tenanthasrole', fn ($args) => "<?php if({$bladeMethodWrapper}('hasRole', {$args})): ?>");
+        $bladeCompiler->directive('endtenanthasrole', fn () => '<?php endif; ?>');
 
-        $bladeCompiler->directive('hasanyrole', fn ($args) => "<?php if({$bladeMethodWrapper}('hasAnyRole', {$args})): ?>");
-        $bladeCompiler->directive('endhasanyrole', fn () => '<?php endif; ?>');
+        $bladeCompiler->directive('tenanthasanyrole', fn ($args) => "<?php if({$bladeMethodWrapper}('hasAnyRole', {$args})): ?>");
+        $bladeCompiler->directive('endtenanthasanyrole', fn () => '<?php endif; ?>');
 
-        $bladeCompiler->directive('hasallroles', fn ($args) => "<?php if({$bladeMethodWrapper}('hasAllRoles', {$args})): ?>");
-        $bladeCompiler->directive('endhasallroles', fn () => '<?php endif; ?>');
+        $bladeCompiler->directive('tenanthasallroles', fn ($args) => "<?php if({$bladeMethodWrapper}('hasAllRoles', {$args})): ?>");
+        $bladeCompiler->directive('endtenanthasallroles', fn () => '<?php endif; ?>');
 
-        $bladeCompiler->directive('unlessrole', fn ($args) => "<?php if(! {$bladeMethodWrapper}('hasRole', {$args})): ?>");
-        $bladeCompiler->directive('endunlessrole', fn () => '<?php endif; ?>');
+        $bladeCompiler->directive('tenantunlessrole', fn ($args) => "<?php if(! {$bladeMethodWrapper}('hasRole', {$args})): ?>");
+        $bladeCompiler->directive('endtenantunlessrole', fn () => '<?php endif; ?>');
 
-        $bladeCompiler->directive('hasexactroles', fn ($args) => "<?php if({$bladeMethodWrapper}('hasExactRoles', {$args})): ?>");
-        $bladeCompiler->directive('endhasexactroles', fn () => '<?php endif; ?>');
+        $bladeCompiler->directive('tenanthasexactroles', fn ($args) => "<?php if({$bladeMethodWrapper}('hasExactRoles', {$args})): ?>");
+        $bladeCompiler->directive('endtenanthasexactroles', fn () => '<?php endif; ?>');
     }
 }

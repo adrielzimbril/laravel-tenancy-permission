@@ -360,12 +360,13 @@ trait HasPermissions
             ->sort()->values();
     }
 
-    /**
-     * Remove all current permissions and set the given ones.
-     *
-     * @param  string|int|array|Permission|Collection|BackedEnum  $permissions
-     * @return $this
-     */
+	/**
+	 * Remove all current permissions and set the given ones.
+	 *
+	 * @param string|int|array|Permission|Collection|BackedEnum $permissions
+	 * @return $this
+	 * @throws ReflectionException
+	 */
     public function syncPermissions(...$permissions)
     : static {
         if ($this->getModel()->exists) {
@@ -377,11 +378,12 @@ trait HasPermissions
         return $this->givePermissionTo($permissions);
     }
 
-    /**
-     * Returns permissions ids as array keys
-     *
-     * @param  string|int|array|Permission|Collection|BackedEnum  $permissions
-     */
+	/**
+	 * Returns permissions ids as array keys
+	 *
+	 * @param string|int|array|Permission|Collection|BackedEnum $permissions
+	 * @throws ReflectionException
+	 */
     private function collectPermissions(...$permissions): array
     {
         return collect($permissions)
@@ -405,10 +407,11 @@ trait HasPermissions
             }, []);
     }
 
-    /**
-     * @param  string|int|array|Permission|Collection|BackedEnum  $permissions
-     * @return Permission|Permission[]|Collection
-     */
+	/**
+	 * @param string|int|array|Permission|Collection|BackedEnum $permissions
+	 * @return Permission|Permission[]|Collection
+	 * @throws ReflectionException
+	 */
     protected function getStoredPermission($permissions)
     : BackedEnum | array | int | string | Collection | Permission {
         if ($permissions instanceof BackedEnum) {
