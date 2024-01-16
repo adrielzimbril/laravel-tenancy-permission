@@ -24,6 +24,7 @@ class Permission extends Model implements PermissionContract {
 	use RefreshesPermissionCache;
 
 	protected $tenanted = [];
+
 	protected $fillable = [
 		'tenant_name',
 	];
