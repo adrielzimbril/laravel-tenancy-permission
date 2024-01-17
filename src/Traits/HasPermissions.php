@@ -331,14 +331,13 @@ trait HasPermissions {
 			$this->setRelation('permissions', collect());
 		}
 
-		return $this->givePermissionTo($permissions, $tenantName);
+		return $this->givePermissionTo($tenantName, $permissions);
 	}
 
 	/**
 	 * Returns permissions ids as array keys
 	 *
 	 * @param string|int|array|Permission|Collection|BackedEnum $permissions
-	 * @throws ReflectionException
 	 */
 	private function collectPermissions(...$permissions)
 	: array {
