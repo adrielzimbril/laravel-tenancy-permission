@@ -30,8 +30,8 @@ class WildcardPermission implements Wildcard
         $index = [];
 
         foreach ($this->record->getAllPermissions() as $permission) {
-            $index[$permission->tenant_name] = $this->buildIndex(
-                $index[$permission->tenant_name] ?? [],
+            $index[$permission->pivot->tenant_name] = $this->buildIndex(
+                $index[$permission->pivot->tenant_name] ?? [],
                 explode(static::PART_DELIMITER, $permission->name),
                 $permission->name,
             );

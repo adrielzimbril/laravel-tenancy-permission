@@ -35,15 +35,9 @@ trait HasPermissions {
 				return;
 			}
 
-			$teams = app(PermissionRegistrar::class)->teams;
-			app(PermissionRegistrar::class)->teams = false;
 			if (!is_a($model, Permission::class)) {
 				$model->permissions()->detach();
 			}
-			if (is_a($model, Role::class)) {
-				$model->users()->detach();
-			}
-			app(PermissionRegistrar::class)->teams = $teams;
 		});
 	}
 
@@ -147,12 +141,12 @@ trait HasPermissions {
 	 *
 	 * @param string|int|array|Permission|Collection|BackedEnum ...$permissions
 	 */
-	public function hasAnyPermission(...$permissions)
+	public function hasAnyPermission($tenantName, ...$permissions)
 	: bool {
 		$permissions = collect($permissions)->flatten();
 
 		foreach ($permissions as $permission) {
-			if ($this->checkPermissionTo($permission)) {
+			if ($this->checkPermissionTo($tenantName, $permission)) {
 				return true;
 			}
 		}
@@ -166,10 +160,10 @@ trait HasPermissions {
 	 * @param string|int|Permission|BackedEnum $permission
 	 * @param string|null $tenantName
 	 */
-	public function checkPermissionTo($permission, $tenantName = null)
+	public function checkPermissionTo($tenantName, $permission)
 	: bool {
 		try {
-			return $this->hasPermissionTo($permission, $tenantName);
+			return $this->hasPermissionTo($tenantName, $permission);
 		} catch (PermissionDoesNotExist $e) {
 			return false;
 		}
@@ -183,15 +177,15 @@ trait HasPermissions {
 	 *
 	 * @throws PermissionDoesNotExist
 	 */
-	public function hasPermissionTo($permission, $tenantName = null)
+	public function hasPermissionTo($tenantName, $permission)
 	: bool {
 		if ($this->getWildcardClass()) {
-			return $this->hasWildcardPermission($permission, $tenantName);
+			return $this->hasWildcardPermission($tenantName, $permission);
 		}
 
-		$permission = $this->filterPermission($permission, $tenantName);
+		$permission = $this->filterPermission($permission);
 
-		return $this->hasDirectPermission($permission) || $this->hasPermissionViaRole($permission);
+		return $this->hasDirectPermission($permission);
 	}
 
 	public function getWildcardClass() {
@@ -214,11 +208,13 @@ trait HasPermissions {
 
 	/**
 	 * Validates a wildcard permission against all permissions of a user.
-	 *
-	 * @param string|int|Permission|BackedEnum $permission
-	 * @param string|null $tenantName
-	 */
-	protected function hasWildcardPermission($permission, $tenantName = null)
+     *
+     * @param string|null $tenantName
+     * @param mixed $permission
+     * @return bool
+     * @throws WildcardPermissionInvalidArgument
+     */
+	protected function hasWildcardPermission($tenantName, $permission)
 	: bool {
 		$tenantName = $tenantName ?? $this->getDefaultTenantName();
 
@@ -227,7 +223,7 @@ trait HasPermissions {
 		}
 
 		if (is_int($permission) || PermissionRegistrar::isUid($permission)) {
-			$permission = $this->getPermissionClass()::findById($permission, $tenantName);
+			$permission = $this->getPermissionClass()::findById($permission);
 		}
 
 		if ($permission instanceof Permission) {
@@ -292,29 +288,18 @@ trait HasPermissions {
 		return $this->permissions->contains($permission->getKeyName(), $permission->getKey());
 	}
 
-	/**
-	 * Determine if the model has, via roles, the given permission.
-	 */
-	protected function hasPermissionViaRole(Permission $permission)
-	: bool {
-		if (is_a($this, Role::class)) {
-			return false;
-		}
-
-		return $this->hasRole($permission->roles);
-	}
 
 	/**
 	 * Determine if the model has all of the given permissions.
 	 *
 	 * @param string|int|array|Permission|Collection|BackedEnum ...$permissions
 	 */
-	public function hasAllPermissions(...$permissions)
+	public function hasAllPermissions($tenantName, ...$permissions)
 	: bool {
 		$permissions = collect($permissions)->flatten();
 
 		foreach ($permissions as $permission) {
-			if (!$this->checkPermissionTo($permission)) {
+			if (!$this->checkPermissionTo($tenantName, $permission)) {
 				return false;
 			}
 		}
@@ -330,27 +315,9 @@ trait HasPermissions {
 		/** @var Collection $permissions */
 		$permissions = $this->permissions;
 
-		if (method_exists($this, 'roles')) {
-			$permissions = $permissions->merge($this->getPermissionsViaRoles());
-		}
-
 		return $permissions->sort()->values();
 	}
-
-	/**
-	 * Return all the permissions the model has via roles.
-	 */
-	public function getPermissionsViaRoles()
-	: Collection {
-		if (is_a($this, Role::class) || is_a($this, Permission::class)) {
-			return collect();
-		}
-
-		return $this->loadMissing('roles', 'roles.permissions')
-			->roles->flatMap(fn($role) => $role->permissions)
-			->sort()->values();
-	}
-
+    
 	/**
 	 * Remove all current permissions and set the given ones.
 	 *
@@ -362,7 +329,9 @@ trait HasPermissions {
 	: static {
 		if ($this->getModel()->exists) {
 			$this->collectPermissions($permissions);
-			$this->permissions()->detach();
+			$this->permissions()
+                ->wherePivot('tenant_name', $tenantName)
+                ->detach();
 			$this->setRelation('permissions', collect());
 		}
 
@@ -464,37 +433,17 @@ trait HasPermissions {
 	: static {
 		$permissions = $this->collectPermissions($permissions);
 
-		$model = $this->getModel();
-		$currentPermissions = $this->permissions->map(fn($permission) => $permission->getKey())->toArray();
-
-        $permissionsRelation = $this->permissions();
-
-        $existingPermissions = $permissionsRelation
-            ->where(function ($query) use ($tenantName) {
-                $query->where('tenant_name', '=', $tenantName);
-            })
+        $existingPermissions = $this->permissions()
+            ->where('tenant_name', $tenantName)
             ->get();
-/*
-        if ($existingPermissions->isEmpty()) {
-            echo "Aucune permission trouvée avec le tenant_name spécifié.";
-            print_r($existingPermissions);
-        } else {
-            // $existingPermissions contient les permissions qui ne correspondent pas à la condition
-            print_r($existingPermissions->pluck('pivot.tenant_name')->toArray());
-            return json_encode($existingPermissions->toArray());
-        }
-        */
 
         $permissionsToAttach = array_diff($permissions, $existingPermissions->pluck('id')->toArray());
 
-        print_r($permissionsToAttach);
-
-        // Attachez uniquement les permissions qui ne sont pas déjà attachées
         if (!empty($permissionsToAttach)) {
             $this->permissions()->attach($permissionsToAttach, ['tenant_name' => $tenantName]);
         }
 
-			$model->unsetRelation('permissions');
+        $this->getModel()->unsetRelation('permissions');
 
 		if (is_a($this, Role::class)) {
 			$this->forgetCachedPermissions();
@@ -543,10 +492,14 @@ trait HasPermissions {
 		return $this;
 	}
 
-	public function getPermissionNames()
-	: Collection {
-		return $this->permissions->pluck('name');
-	}
+    public function getPermissionNames()
+    : Collection {
+        return $this->permissions->pluck('name');
+    }
+    public function getPermissionInfos()
+    : Collection {
+        return $this->permissions->pluck('name', 'pivot.tenant_name');
+    }
 
 	/**
 	 * Check if the model has All of the requested Direct permissions.
