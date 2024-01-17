@@ -19,7 +19,7 @@
             "email": "adrielzimbril@oricodes.com"
         }
     ],
-    "homepage": "https://github.com/oricodes/paymentgateway",
+    "homepage": "https://github.com/oricodes/laravel-tenancy-permission",
     "require": {
         "php": "^8.2",
         "illuminate/auth": "^8.12|^9.0|^10.0|^11.0",
@@ -29,9 +29,9 @@
         "stancl/tenancy": "^3.7"
     },
     "require-dev": {
-        "laravel/passport": "^11.0",
-        "orchestra/testbench": "^6.23|^7.0|^8.0|^9.0",
-        "phpunit/phpunit": "^9.4|^10.1"
+        "laravel/passport": "^11.8",
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.5"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

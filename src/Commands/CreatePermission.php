@@ -8,16 +8,15 @@ use Oricodes\TenantPermission\Contracts\Permission as PermissionContract;
 class CreatePermission extends Command
 {
     protected $signature = 'permission:create-permission 
-                {name : The name of the permission} 
-                {tenant? : The name of the tenant}';
+                {name : The name of the permission}';
 
     protected $description = 'Create a permission';
 
     public function handle()
-    {
+    : void {
         $permissionClass = app(PermissionContract::class);
 
-        $permission = $permissionClass::findOrCreate($this->argument('name'), $this->argument('tenant'));
+        $permission = $permissionClass::findOrCreate($this->argument('name'));
 
         $this->info("Permission `{$permission->name}` ".($permission->wasRecentlyCreated ? 'created' : 'already exists'));
     }

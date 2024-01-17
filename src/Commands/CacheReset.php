@@ -12,7 +12,7 @@ class CacheReset extends Command
     protected $description = 'Reset the permission cache';
 
     public function handle()
-    {
+    : void {
         if (app(PermissionRegistrar::class)->forgetCachedPermissions()) {
             $this->info('Permission cache flushed.');
         } else {
