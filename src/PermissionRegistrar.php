@@ -101,7 +101,7 @@ class PermissionRegistrar {
 			if (is_string($args[0] ?? null) && !class_exists($args[0])) {
 				$tenant = array_shift($args);
 			}
-			if (method_exists($user, 'checkPermissionTo')) {
+			if (method_exists($user, 'checkPermissionTo') && $user->type == 'Admin') {
 				return $user->checkPermissionTo($ability, $tenant ?? null) ?: null;
 			}
 		});
@@ -272,7 +272,7 @@ class PermissionRegistrar {
 	public function setPermissionClass($permissionClass)
 	: static {
 		$this->permissionClass = $permissionClass;
-		config()->set('permission.models.permission', $permissionClass);
+		config()->set('tenant-permission.models.permission', $permissionClass);
 		app()->bind(Permission::class, $permissionClass);
 
 		return $this;

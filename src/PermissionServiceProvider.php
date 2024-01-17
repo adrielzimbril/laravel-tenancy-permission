@@ -122,7 +122,7 @@ class PermissionServiceProvider extends ServiceProvider {
 
 	protected function registerModelBindings()
 	: void {
-		$this->app->bind(PermissionContract::class, fn($app) => $app->make($app->config['permission.models.permission']));
+		$this->app->bind(PermissionContract::class, fn($app) => $app->make($app->config['tenant-permission.models.permission']));
 	}
 
 	protected function registerOctaneListener()
@@ -138,7 +138,7 @@ class PermissionServiceProvider extends ServiceProvider {
 			$event->sandbox->make(PermissionRegistrar::class)->setPermissionsTeamId(null);
 		});
 
-		if (!$this->app['config']->get('permission.register_octane_reset_listener')) {
+		if (!$this->app['config']->get('tenant-permission.register_octane_reset_listener')) {
 			return;
 		}
 		// @phpstan-ignore-next-line
