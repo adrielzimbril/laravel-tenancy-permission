@@ -3,6 +3,7 @@
 namespace Oricodes\TenantPermission\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Auth;
 use Oricodes\TenantPermission\Exceptions\UnauthorizedException;
 
 class TenantPermissionMiddleware {
@@ -17,7 +18,7 @@ class TenantPermissionMiddleware {
 	public function handle($request, Closure $next, array | string $permission)
 	: string {
 		$tenant = tenant()->id;
-		$user = tenant()->user;
+		$user = Auth::guard('tenant_user')->user();
 
 		if (!$user) {
 			throw UnauthorizedException::notLoggedIn();
