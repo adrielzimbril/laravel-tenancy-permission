@@ -12,7 +12,6 @@ use Oricodes\TenantPermission\Exceptions\PermissionAlreadyExists;
 use Oricodes\TenantPermission\Exceptions\PermissionDoesNotExist;
 use Oricodes\TenantPermission\PermissionRegistrar;
 use Oricodes\TenantPermission\Tenant;
-use Oricodes\TenantPermission\Traits\HasRoles;
 use Oricodes\TenantPermission\Traits\RefreshesPermissionCache;
 use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
@@ -21,7 +20,6 @@ use Stancl\Tenancy\Database\Concerns\CentralConnection;
  * @property ?Carbon $updated_at
  */
 class Permission extends Model implements PermissionContract {
-	use HasRoles;
 	use RefreshesPermissionCache;
 	use CentralConnection;
 
@@ -138,13 +136,13 @@ class Permission extends Model implements PermissionContract {
 	/**
 	 * A permission can be applied to roles.
 	 */
-	public function roles()
+	public function tenant()
 	: BelongsToMany {
 		return $this->belongsToMany(
-			config('tenant-permission.models.role'),
-			config('tenant-permission.table_names.role_has_permissions'),
+			getModelForTenant(),
+			config('tenant-permission.table_names.model_has_permissions'),
 			app(PermissionRegistrar::class)->pivotPermission,
-			app(PermissionRegistrar::class)->pivotRole
+			'tenant_name'
 		);
 	}
 
@@ -154,7 +152,7 @@ class Permission extends Model implements PermissionContract {
 	public function users()
 	: BelongsToMany {
 		return $this->morphedByMany(
-			getModelForTenant(),
+			getModelForUser(),
 			'model',
 			config('tenant-permission.table_names.model_has_permissions'),
 			app(PermissionRegistrar::class)->pivotPermission,
