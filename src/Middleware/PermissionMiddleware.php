@@ -5,7 +5,7 @@ namespace Oricodes\TenantPermission\Middleware;
 use Closure;
 use Oricodes\TenantPermission\Exceptions\UnauthorizedException;
 
-class PermissionMiddleware {
+class TenantPermissionMiddleware {
 	/**
 	 * Specify the permission and tenant for the middleware.
 	 *
