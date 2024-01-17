@@ -50,7 +50,7 @@ trait HasPermissions {
 	/**
 	 * A model may have multiple direct permissions.
 	 */
-	public function permissions()  {
+	public function permissions() : BelongsToMany {
 		$relation = $this->morphToMany(
 			config('tenant-permission.models.permission'),
 			'model',
@@ -464,25 +464,39 @@ trait HasPermissions {
 	: static {
 		$permissions = $this->collectPermissions($permissions);
 
-        $model = $this->getModel();
-        $currentPermissions = $this->permissions;
+		$model = $this->getModel();
+		$currentPermissions = $this->permissions->map(fn($permission) => $permission->getKey())->toArray();
 
-        $currentTenantNames = $currentPermissions->pluck('tenant_name')->unique()->toArray();
-        $newTenantNames = array_fill(0, count($permissions), $tenantName);
+        $permissionsRelation = $this->permissions();
 
-        if (count(array_diff($newTenantNames, $currentTenantNames)) > 0) {
-            $syncData = [];
+        $existingPermissions = $permissionsRelation
+            ->where(function ($query) use ($tenantName) {
+                $query->where('tenant_name', '=', $tenantName);
+            })
+            ->get();
+/*
+        if ($existingPermissions->isEmpty()) {
+            echo "Aucune permission trouvée avec le tenant_name spécifié.";
+            print_r($existingPermissions);
+        } else {
+            // $existingPermissions contient les permissions qui ne correspondent pas à la condition
+            print_r($existingPermissions->pluck('pivot.tenant_name')->toArray());
+            return json_encode($existingPermissions->toArray());
+        }
+        */
 
-            foreach ($permissions as $permission) {
-                $syncData[$permission] = ['tenant_name' => $tenantName];
-            }
+        $permissionsToAttach = array_diff($permissions, $existingPermissions->pluck('id')->toArray());
 
-            $this->permissions()->sync($syncData, true);
+        print_r($permissionsToAttach);
+
+        // Attachez uniquement les permissions qui ne sont pas déjà attachées
+        if (!empty($permissionsToAttach)) {
+            $this->permissions()->attach($permissionsToAttach, ['tenant_name' => $tenantName]);
         }
 
-        $model->unsetRelation('permissions');
+			$model->unsetRelation('permissions');
 
-        if (is_a($this, Role::class)) {
+		if (is_a($this, Role::class)) {
 			$this->forgetCachedPermissions();
 		}
 
@@ -514,7 +528,9 @@ trait HasPermissions {
 	 */
 	public function revokePermissionTo($tenantName, $permission)
 	: static {
-		$this->permissions()->detach($this->getStoredPermission($permission));
+		$this->permissions()
+            ->wherePivot('tenant_name', $tenantName)
+            ->detach($this->getStoredPermission($permission));
 
 		if (is_a($this, Role::class)) {
 			$this->forgetCachedPermissions();
