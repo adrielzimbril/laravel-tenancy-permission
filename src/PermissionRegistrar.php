@@ -101,8 +101,8 @@ class PermissionRegistrar {
 			if (is_string($args[0] ?? null) && !class_exists($args[0])) {
 				$tenant = array_shift($args);
 			}
-			if (method_exists($user, 'checkPermissionTo') && $user->type == 'Admin') {
-				return $user->checkPermissionTo($ability, $tenant ?? null) ?: null;
+			if (method_exists($user, 'checkTenantPermission') && $user->type == 'Admin') {
+				return $user->checkTenantPermission($ability, $tenant ?? null) ?: null;
 			}
 		});
 

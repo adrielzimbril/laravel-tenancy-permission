@@ -162,8 +162,8 @@ class PermissionServiceProvider extends ServiceProvider {
 	: void {
 		$bladeMethodWrapper = '\\Oricodes\\TenantPermission\\PermissionServiceProvider::bladeMethodWrapper';
 
-		$bladeCompiler->directive('tenanthaspermission', fn($args) => "<?php if({$bladeMethodWrapper}('checkPermissionTo', {$args})): ?>");
-		$bladeCompiler->directive('elsehaspermission', fn($args) => "<?php elseif({$bladeMethodWrapper}('checkPermissionTo', {$args})): ?>");
+		$bladeCompiler->directive('tenanthaspermission', fn($args) => "<?php if({$bladeMethodWrapper}('checkTenantPermission', {$args})): ?>");
+		$bladeCompiler->directive('elsehaspermission', fn($args) => "<?php elseif({$bladeMethodWrapper}('checkTenantPermission', {$args})): ?>");
 		$bladeCompiler->directive('endtenanthaspermission', fn() => '<?php endif; ?>');
 	}
 }

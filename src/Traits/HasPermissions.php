@@ -139,7 +139,7 @@ trait HasPermissions {
 		$permissions = collect($permissions)->flatten();
 
 		foreach ($permissions as $permission) {
-			if ($this->checkPermissionTo($tenantName, $permission)) {
+			if ($this->checkTenantPermission($tenantName, $permission)) {
 				return true;
 			}
 		}
@@ -154,7 +154,7 @@ trait HasPermissions {
 	 * @param BackedEnum|int|string|Permission $permission
 	 * @return bool
 	 */
-	public function checkPermissionTo(?string $tenantName, BackedEnum | int | string | Permission $permission)
+	public function checkTenantPermission(?string $tenantName, BackedEnum | int | string | Permission $permission)
 	: bool {
 		$tenantName = $tenantName ?? $this->getDefaultTenantName();
 
@@ -295,7 +295,7 @@ trait HasPermissions {
 		$permissions = collect($permissions)->flatten();
 
 		foreach ($permissions as $permission) {
-			if (!$this->checkPermissionTo($tenantName, $permission)) {
+			if (!$this->checkTenantPermission($tenantName, $permission)) {
 				return false;
 			}
 		}
