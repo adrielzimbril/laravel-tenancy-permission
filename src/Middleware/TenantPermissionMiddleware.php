@@ -9,20 +9,15 @@ class TenantPermissionMiddleware {
 	/**
 	 * Specify the permission and tenant for the middleware.
 	 *
-	 * @param string $tenant
+	 * @param $request
+	 * @param Closure $next
 	 * @param array|string $permission
 	 * @return string
 	 */
-	public static function using(string $tenant, array | string $permission)
+	public function handle($request, Closure $next, array | string $permission)
 	: string {
-		$permissionString = is_string($permission) ? $permission : implode('|', $permission);
-		$args = "$tenant,$permissionString";
-
-		return static::class . ':' . $args;
-	}
-
-	public function handle($request, Closure $next, $tenant, $permission) {
-		$user = tenant($tenant)->user ?? tenant()->user;
+		$tenant = tenant()->id;
+		$user = tenant()->user;
 
 		if (!$user) {
 			throw UnauthorizedException::notLoggedIn();
@@ -37,7 +32,6 @@ class TenantPermissionMiddleware {
 			: explode('|', $permission);
 
 		if (!$user->canAny($tenant, $permissions)) {
-			print_r($user . "\n\n\n" . $tenant . "\n" . $permission);
 			throw UnauthorizedException::forPermissions($permissions);
 		}
 

@@ -10,10 +10,10 @@ class UnauthorizedException extends HttpException {
 
 	public static function forPermissions(array $permissions)
 	: self {
-		$message = 'User does not have the right permissions.';
+		$message = '🚫 Access Denied: Sorry, you do not have the necessary permissions to perform this action.';
 
 		if (config('tenant-permission.display_permission_in_exception')) {
-			$message .= ' Necessary permissions are ' . implode(', ', $permissions);
+			$message .= ' 😟  Required permissions: ' . implode(', ', $permissions);
 		}
 
 		$exception = new static(403, $message, null, []);

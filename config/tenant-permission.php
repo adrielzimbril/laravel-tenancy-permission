@@ -20,7 +20,7 @@ return [
 		/*
 		 * When using the "HasPermissions" trait from this package, we need to know which
 		 * table should be used to retrieve your permissions. We have chosen a basic
-		 * default value but you may easily change it to any table you like.
+		 * default value, but you may change it to any table you like.
 		 */
 
 		'permissions' => 'tenant_permissions',
@@ -28,7 +28,7 @@ return [
 		/*
 		 * When using the "HasPermissions" trait from this package, we need to know which
 		 * table should be used to retrieve your models permissions. We have chosen a
-		 * basic default value but you may easily change it to any table you like.
+		 * basic default value, but you may change it to any table you like.
 		 */
 
 		'model_has_permissions' => 'tenant_model_has_permissions',
@@ -76,14 +76,6 @@ return [
 	 */
 
 	'display_permission_in_exception' => false,
-
-	/*
-	 * When set to true, the required role names are added to exception messages.
-	 * This could be considered an information leak in some contexts, so the default
-	 * setting is false here for optimum safety.
-	 */
-
-	'display_role_in_exception' => false,
 
 	/*
 	 * By default, wildcard permission lookups are disabled.
