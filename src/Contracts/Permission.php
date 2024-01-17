@@ -2,7 +2,6 @@
 
 namespace Oricodes\TenantPermission\Contracts;
 
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Oricodes\TenantPermission\Exceptions\PermissionDoesNotExist;
 
 /**
@@ -35,10 +34,4 @@ interface Permission {
 	 */
 	public static function findOrCreate(string $name)
 	: self;
-
-	/**
-	 * A permission can be applied to roles.
-	 */
-	public function roles()
-	: BelongsToMany;
 }

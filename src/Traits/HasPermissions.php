@@ -304,7 +304,7 @@ trait HasPermissions {
 	}
 
 	/**
-	 * Return all the permissions the model has, both directly and via roles.
+	 * Return all the permissions the model has directly.
 	 */
 	public function getAllPermissions()
 	: Collection {
@@ -432,18 +432,14 @@ trait HasPermissions {
 	/**
 	 * Revoke the given permission(s).
 	 *
-	 * @param Permission|Permission[]|string|string[]|BackedEnum $permission
+	 * @param string|BackedEnum|Permission|Permission[]|string[] $permission
 	 * @return $this
 	 */
-	public function revokePermissionTo($tenantName, $permission)
+	public function revokePermissionTo($tenantName, array | string | Permission | BackedEnum $permission)
 	: static {
 		$this->permissions()
 			->wherePivot('tenant_name', $tenantName)
 			->detach($this->getStoredPermission($permission));
-
-		if (is_a($this, Role::class)) {
-			$this->forgetCachedPermissions();
-		}
 
 		$this->forgetWildcardPermissionIndex();
 

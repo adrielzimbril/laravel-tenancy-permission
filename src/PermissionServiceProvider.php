@@ -18,10 +18,10 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class PermissionServiceProvider extends ServiceProvider {
-	public static function bladeMethodWrapper($method, $role, $tenant = null)
+	public static function bladeMethodWrapper($method, $tenant = null)
 	: bool {
 		$guard = 'tenant_user';
-		return auth($guard)->check() && auth($guard)->user()->{$method}($role);
+		return auth($guard)->check() && auth($guard)->user()->{$method};
 	}
 
 	/**

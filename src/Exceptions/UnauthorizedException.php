@@ -5,73 +5,37 @@ namespace Oricodes\TenantPermission\Exceptions;
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class UnauthorizedException extends HttpException
-{
-    private $requiredRoles = [];
+class UnauthorizedException extends HttpException {
+	private $requiredPermissions = [];
 
-    private $requiredPermissions = [];
+	public static function forPermissions(array $permissions)
+	: self {
+		$message = 'User does not have the right permissions.';
 
-    public static function forRoles(array $roles): self
-    {
-        $message = 'User does not have the right roles.';
+		if (config('tenant-permission.display_permission_in_exception')) {
+			$message .= ' Necessary permissions are ' . implode(', ', $permissions);
+		}
 
-        if (config('tenant-permission.display_role_in_exception')) {
-            $message .= ' Necessary roles are '.implode(', ', $roles);
-        }
+		$exception = new static(403, $message, null, []);
+		$exception->requiredPermissions = $permissions;
 
-        $exception = new static(403, $message, null, []);
-        $exception->requiredRoles = $roles;
+		return $exception;
+	}
 
-        return $exception;
-    }
+	public static function missingTraitHasPermissions(Authorizable $user)
+	: self {
+		$class = get_class($user);
 
-    public static function forPermissions(array $permissions): self
-    {
-        $message = 'User does not have the right permissions.';
+		return new static(403, "Authorizable class `{$class}` must use Oricodes\TenantPermission\Traits\HasPermissions trait.", null, []);
+	}
 
-        if (config('tenant-permission.display_permission_in_exception')) {
-            $message .= ' Necessary permissions are '.implode(', ', $permissions);
-        }
+	public static function notLoggedIn()
+	: self {
+		return new static(403, 'User is not logged in.', null, []);
+	}
 
-        $exception = new static(403, $message, null, []);
-        $exception->requiredPermissions = $permissions;
-
-        return $exception;
-    }
-
-    public static function forRolesOrPermissions(array $rolesOrPermissions): self
-    {
-        $message = 'User does not have any of the necessary access rights.';
-
-        if (config('tenant-permission.display_permission_in_exception') && config('tenant-permission.display_role_in_exception')) {
-            $message .= ' Necessary roles or permissions are '.implode(', ', $rolesOrPermissions);
-        }
-
-        $exception = new static(403, $message, null, []);
-        $exception->requiredPermissions = $rolesOrPermissions;
-
-        return $exception;
-    }
-
-    public static function missingTraitHasRoles(Authorizable $user): self
-    {
-        $class = get_class($user);
-
-        return new static(403, "Authorizable class `{$class}` must use Oricodes\TenantPermission\Traits\HasRoles trait.", null, []);
-    }
-
-    public static function notLoggedIn(): self
-    {
-        return new static(403, 'User is not logged in.', null, []);
-    }
-
-    public function getRequiredRoles(): array
-    {
-        return $this->requiredRoles;
-    }
-
-    public function getRequiredPermissions(): array
-    {
-        return $this->requiredPermissions;
-    }
+	public function getRequiredPermissions()
+	: array {
+		return $this->requiredPermissions;
+	}
 }

@@ -5,43 +5,41 @@ namespace Oricodes\TenantPermission\Middleware;
 use Closure;
 use Oricodes\TenantPermission\Exceptions\UnauthorizedException;
 
-class PermissionMiddleware
-{
-    /**
-     * Specify the permission and tenant for the middleware.
-     *
-     * @param array|string $permission
-     * @param string|null $tenant
-     * @return string
-     */
-    public static function using(array | string $permission, string $tenant = null)
-    : string {
-        $permissionString = is_string($permission) ? $permission : implode('|', $permission);
-        $args = is_null($tenant) ? $permissionString : "$permissionString,$tenant";
+class PermissionMiddleware {
+	/**
+	 * Specify the permission and tenant for the middleware.
+	 *
+	 * @param array|string $permission
+	 * @param string|null $tenant
+	 * @return string
+	 */
+	public static function using(array | string $permission, string $tenant = null)
+	: string {
+		$permissionString = is_string($permission) ? $permission : implode('|', $permission);
+		$args = is_null($tenant) ? $permissionString : "$permissionString,$tenant";
 
-        return static::class.':'.$args;
-    }
+		return static::class . ':' . $args;
+	}
 
-    public function handle($request, Closure $next, $permission, $tenant = null)
-    {
-        $user = $tenant ? tenant($tenant)->user : tenant()->user;
+	public function handle($request, Closure $next, $permission, $tenant = null) {
+		$user = $tenant ? tenant($tenant)->user : tenant()->user;
 
-        if (! $user) {
-            throw UnauthorizedException::notLoggedIn();
-        }
+		if (!$user) {
+			throw UnauthorizedException::notLoggedIn();
+		}
 
-        if (! method_exists($user, 'hasAnyPermission')) {
-            throw UnauthorizedException::missingTraitHasRoles($user);
-        }
+		if (!method_exists($user, 'hasAnyPermission')) {
+			throw UnauthorizedException::missingTraitHasPermissions($user);
+		}
 
-        $permissions = is_array($permission)
-            ? $permission
-            : explode('|', $permission);
+		$permissions = is_array($permission)
+			? $permission
+			: explode('|', $permission);
 
-        if (! $user->canAny($permissions)) {
-            throw UnauthorizedException::forPermissions($permissions);
-        }
+		if (!$user->canAny($permissions)) {
+			throw UnauthorizedException::forPermissions($permissions);
+		}
 
-        return $next($request);
-    }
+		return $next($request);
+	}
 }

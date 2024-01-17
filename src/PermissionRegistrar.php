@@ -21,10 +21,8 @@ class PermissionRegistrar {
 	protected Repository $cache;
 	protected CacheManager $cacheManager;
 	protected string $permissionClass;
-	protected string $roleClass;
 	/** @var Collection|array|null */
 	protected array | null | Collection $permissions;
-	private array $cachedRoles = [];
 
 	private array $alias = [];
 
@@ -37,7 +35,6 @@ class PermissionRegistrar {
 	 */
 	public function __construct(CacheManager $cacheManager) {
 		$this->permissionClass = config('tenant-permission.models.permission');
-		$this->roleClass = config('tenant-permission.models.role');
 
 		$this->cacheManager = $cacheManager;
 		$this->initializeCache();
@@ -183,8 +180,6 @@ class PermissionRegistrar {
 		$this->alias = $this->permissions['alias'];
 
 		$this->permissions = $this->getHydratedPermissionCollection();
-
-		$this->cachedRoles = $this->alias = $this->except = [];
 	}
 
 	private function getSerializedPermissionsForCache()
@@ -192,7 +187,8 @@ class PermissionRegistrar {
 		$this->except = config('tenant-permission.cache.column_names_except', ['created_at', 'updated_at', 'deleted_at'
 		]);
 
-		$permissions = $this->getPermissionsWithRoles()
+		$permissions = $this->permissionClass::select()
+			->get()
 			->map(function ($permission) {
 				if (!$this->alias) {
 					$this->aliasModelFields($permission);
@@ -202,11 +198,6 @@ class PermissionRegistrar {
 			})->all();
 
 		return ['alias' => array_flip($this->alias)] + compact('permissions');
-	}
-
-	protected function getPermissionsWithRoles()
-	: Collection {
-		return $this->permissionClass::select()->with('roles')->get();
 	}
 
 	/**
