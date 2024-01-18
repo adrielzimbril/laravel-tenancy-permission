@@ -27,12 +27,9 @@ class Permission extends Model implements PermissionContract {
 
 	protected $fillable = [
 		'name',
-		'tenant_name',
 	];
 
 	public function __construct(array $attributes = []) {
-		$attributes['tenant_name'] = $attributes['tenant_name'] ?? tenant()->id;
-
 		parent::__construct($attributes);
 
 		$this->guarded[] = $this->primaryKey;
@@ -85,8 +82,6 @@ class Permission extends Model implements PermissionContract {
 	 */
 	public static function create(array $attributes = [])
 	: Model | Builder {
-		$attributes['tenant_name'] = $attributes['tenant_name'] ?? Tenant::getDefaultName();
-
 		$permission = static::getPermission(['name' => $attributes['name']
 		]);
 
@@ -123,7 +118,6 @@ class Permission extends Model implements PermissionContract {
 	 */
 	public static function findOrCreate(string $name)
 	: PermissionContract {
-		$tenantName = $tenantName ?? Tenant::getDefaultName();
 		$permission = static::getPermission(['name' => $name]);
 
 		if (!$permission) {
